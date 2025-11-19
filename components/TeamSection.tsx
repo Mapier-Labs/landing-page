@@ -10,6 +10,12 @@ const teamMembers = [
     description: '拥有丰富的科技行业领导经验，致力于推动AI导航技术的创新与应用。',
   },
   {
+    name: 'Homin Luo',
+    role: '联合创始人 & CTO',
+    linkedin: 'https://www.linkedin.com/in/hominluo/',
+    description: '专注于人工智能和导航技术的研发，在LLM应用领域有深厚的技术积累。',
+  },
+  {
     name: 'Mido Sang',
     role: '首席开发工程师',
     linkedin: 'https://www.linkedin.com/in/mido-sang-a99657265/',
