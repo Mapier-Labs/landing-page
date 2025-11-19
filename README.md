@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mapier Landing Page
 
-## Getting Started
+Mapier AI驱动的智能导航应用落地页。
 
-First, run the development server:
+## 项目简介
+
+Mapier是一款创新的AI地图导航应用，利用大型语言模型（LLM）技术理解用户意图，提供个性化、智能化的导航体验。
+
+### 核心功能
+
+- **AI理解用户意图**：通过LLM技术理解复杂的自然语言导航需求
+- **个性化导航**：根据用户偏好提供定制化路线推荐
+- **丰富的POI信息**：整合海量兴趣点数据
+- **用户内容上传**：支持用户上传地点信息和评论
+- **语音控制**：支持语音指令操作
+- **智能路线规划**：综合考虑多维度因素提供最优路线
+
+## 技术栈
+
+- **Next.js 16** - React框架
+- **TypeScript** - 类型安全
+- **Tailwind CSS** - 样式框架
+- **Lucide React** - 图标库
+
+## 开发状态
+
+- ✅ MVP阶段：核心功能已基本实现
+- 🚧 封闭测试：计划在未来几个月内启动
+- 📅 公开测试：基于用户反馈优化后推出
+
+## 团队
+
+- **Jinyi Bruce Li** - 联合创始人 & CEO
+- **Homin Luo** - 联合创始人 & CTO
+- **Mido Sang** - 首席开发工程师
+- **Mark Xiong** - 产品经理
+- **Neo Shangguan** - UX/UI 设计师
+
+## 本地开发
 
 ```bash
+# 安装依赖
+npm install
+
+# 启动开发服务器
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# 构建生产版本
+npm run build
+
+# 启动生产服务器
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+访问 [http://localhost:3000](http://localhost:3000) 查看页面。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 部署
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 部署到 Vercel
 
-## Learn More
+1. 将代码推送到 GitHub
+2. 在 [Vercel](https://vercel.com) 导入项目
+3. 自动部署完成
 
-To learn more about Next.js, take a look at the following resources:
+或者使用 Vercel CLI：
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install -g vercel
+vercel
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 等待列表API
 
-## Deploy on Vercel
+等待列表提交API位于 `/api/waitlist`，当前实现为基本版本。可以根据需要集成：
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Vercel KV (Redis)
+- Airtable
+- Google Sheets API
+- 自定义数据库
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 许可证
+
+私有项目，保留所有权利。
+
+## 联系方式
+
+- GitHub: [Mapier-AI/Mapier-Landing-Page](https://github.com/Mapier-AI/Mapier-Landing-Page)
