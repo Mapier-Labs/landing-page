@@ -1,6 +1,8 @@
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
+import BusinessDescription from '@/components/BusinessDescription';
 import FeaturesSection from '@/components/FeaturesSection';
+import ProductDetails from '@/components/ProductDetails';
 import StatusSection from '@/components/StatusSection';
 import TeamSection from '@/components/TeamSection';
 import WaitlistForm from '@/components/WaitlistForm';
@@ -11,7 +13,9 @@ export default function Home() {
     <main className="min-h-screen">
       <Header />
       <HeroSection />
+      <BusinessDescription />
       <FeaturesSection />
+      <ProductDetails />
       <StatusSection />
       <TeamSection />
       <WaitlistForm />

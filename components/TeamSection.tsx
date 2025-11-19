@@ -8,35 +8,40 @@ const teamMembers = [
     role: 'Co-founder',
     specialization: 'UI/UX Branding Design & Product Design',
     linkedin: 'https://www.linkedin.com/in/jinyi-bruce-li/',
-    description: 'Passionate about creating intuitive user experiences and building products that make a difference.',
+    description: 'Passionate about creating intuitive user experiences and building products that make a difference. Brings extensive experience in design systems, brand identity, and product strategy.',
+    background: 'Expert in UI/UX design with a focus on creating user-centered experiences. Has led design initiatives for multiple products and brings strong expertise in visual design and product thinking.',
   },
   {
     name: 'Homin Luo',
     role: 'Co-founder',
     specialization: 'Engineering',
     linkedin: 'https://www.linkedin.com/in/hominluo/',
-    description: 'Focused on AI and navigation technology development with deep expertise in LLM applications.',
+    description: 'Focused on AI and navigation technology development with deep expertise in LLM applications. Leads the technical architecture and AI integration efforts.',
+    background: 'Experienced engineer with strong background in machine learning and AI systems. Specializes in Large Language Model integration and navigation algorithms.',
   },
   {
     name: 'Mido Sang',
     role: 'Co-founder',
     specialization: 'Engineering',
     linkedin: 'https://www.linkedin.com/in/mido-sang-a99657265/',
-    description: 'Leading core product development with extensive experience in mobile apps and mapping services.',
+    description: 'Leading core product development with extensive experience in mobile apps and mapping services. Drives the technical implementation of key features.',
+    background: 'Senior engineer with proven track record in mobile application development and geospatial technologies. Has built scalable mapping and location-based services.',
   },
   {
     name: 'Mark Xiong',
     role: 'Co-founder',
     specialization: 'Product',
     linkedin: 'https://www.linkedin.com/in/mark-xiong-356aa3210/',
-    description: 'Expert in product design and user experience optimization, dedicated to creating intuitive navigation products.',
+    description: 'Expert in product design and user experience optimization, dedicated to creating intuitive navigation products. Shapes product vision and user experience strategy.',
+    background: 'Product leader with experience in building user-focused products. Combines technical understanding with strong product sense to deliver exceptional user experiences.',
   },
   {
     name: 'Neo Shangguan',
     role: 'Co-founder',
     specialization: 'Engineering',
     linkedin: 'https://www.linkedin.com/in/neo-shangguan/',
-    description: 'Specialized in user interface and interaction design, creating beautiful and powerful user experiences.',
+    description: 'Specialized in user interface and interaction design, creating beautiful and powerful user experiences. Bridges design and engineering to deliver polished products.',
+    background: 'Full-stack engineer with strong design sensibilities. Has experience building interactive interfaces and implementing complex user interactions.',
   },
 ];
 
@@ -76,8 +81,11 @@ export default function TeamSection() {
                   <Linkedin className="w-5 h-5" />
                 </a>
               </div>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 text-sm leading-relaxed mb-3">
                 {member.description}
+              </p>
+              <p className="text-gray-500 text-xs leading-relaxed italic">
+                {member.background}
               </p>
             </div>
           ))}
