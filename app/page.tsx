@@ -3,6 +3,7 @@ import HeroSection from '@/components/HeroSection';
 import BusinessDescription from '@/components/BusinessDescription';
 import FeaturesSection from '@/components/FeaturesSection';
 import ProductDetails from '@/components/ProductDetails';
+import DataVisualization from '@/components/DataVisualization';
 import StatusSection from '@/components/StatusSection';
 import TeamSection from '@/components/TeamSection';
 import WaitlistForm from '@/components/WaitlistForm';
@@ -16,6 +17,7 @@ export default function Home() {
       <BusinessDescription />
       <FeaturesSection />
       <ProductDetails />
+      <DataVisualization />
       <StatusSection />
       <TeamSection />
       <WaitlistForm />
