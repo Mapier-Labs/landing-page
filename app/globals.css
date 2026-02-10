@@ -201,6 +201,12 @@ body.is-dragging {
   color: #4488ff;
 }
 
+.btn--link {
+  pointer-events: auto;
+  cursor: pointer;
+  text-decoration: none;
+}
+
 .burst-line {
   position: fixed;
   height: 2.5px;
