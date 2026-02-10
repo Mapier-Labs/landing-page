@@ -15,8 +15,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mapier.ai"),
   title: "Mapier - AI-Powered Navigation App",
-  description: "Mapier leverages advanced Large Language Model technology to understand complex user intents and deliver personalized, intelligent navigation experiences. Features include AI understanding, personalized recommendations, POI search, user uploads, and voice control.",
-  keywords: ["AI navigation", "intelligent navigation", "map navigation", "LLM navigation", "voice navigation", "personalized navigation"],
+  description:
+    "Mapier leverages advanced Large Language Model technology to understand complex user intents and deliver personalized, intelligent navigation experiences. Features include AI understanding, personalized recommendations, POI search, user uploads, and voice control.",
+  keywords: [
+    "AI navigation",
+    "intelligent navigation",
+    "map navigation",
+    "LLM navigation",
+    "voice navigation",
+    "personalized navigation",
+  ],
   robots: { index: true, follow: true },
   alternates: {
     canonical: "/",
@@ -67,11 +75,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
     </html>
   );
 }
