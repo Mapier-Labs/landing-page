@@ -1,44 +1,385 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@font-face {
+  font-family: "Hornbill";
+  src: url("/landing/fonts/HornbillTrial-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html,
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    "Helvetica Neue",
+    "Segoe UI",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body.is-dragging {
+  cursor: grabbing !important;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.bg {
+  position: fixed;
+  inset: 0;
+  background: url("/landing/bg-map.png") center / cover no-repeat;
+  z-index: 0;
+}
+
+.reset-btn {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.reset-btn:hover {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.reset-btn:active {
+  transform: scale(0.92);
+}
+
+.reset-btn svg {
+  width: 18px;
+  height: 18px;
+  color: #555;
+  transition: transform 0.15s ease;
+}
+
+.draggable {
+  position: fixed;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0px 2px 5px rgba(0, 0, 0, 0.1));
+  transition:
+    filter 0.25s ease,
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform, filter;
+}
+
+.draggable img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.draggable:hover {
+  filter: drop-shadow(0px 5px 14px rgba(0, 0, 0, 0.18));
+}
+
+.draggable.is-grabbing {
+  cursor: grabbing;
+  filter: drop-shadow(0px 16px 28px rgba(0, 0, 0, 0.2));
+  transition:
+    filter 0.15s ease,
+    transform 0.15s ease-out;
+}
+
+.draggable--desc p {
+  font-size: clamp(13px, 1.2vw, 15px);
+  color: #999;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+  width: clamp(280px, 30vw, 400px);
+  pointer-events: none;
+}
+
+.draggable--icon {
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.draggable--icon img {
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  object-fit: cover;
+}
+
+.draggable--title h1 {
+  font-family: "Hornbill", Georgia, "Times New Roman", serif;
+  font-size: clamp(52px, 8vw, 100px);
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.draggable--phone {
+  filter: drop-shadow(0px 4px 20px rgba(0, 0, 0, 0.12));
+}
+
+.draggable--phone:hover {
+  filter: drop-shadow(0px 6px 24px rgba(0, 0, 0, 0.18));
+}
+
+.draggable--phone.is-grabbing {
+  filter: drop-shadow(0px 20px 40px rgba(0, 0, 0, 0.22));
+}
+
+.draggable--btn {
+  filter: drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.08));
+}
+
+.draggable--btn:hover {
+  filter: drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.14));
+}
+
+.draggable--btn.is-grabbing {
+  filter: drop-shadow(0px 12px 24px rgba(0, 0, 0, 0.18));
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 590;
+  border: none;
+  border-radius: 220px;
+  cursor: inherit;
+  padding: 14px 18px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.btn svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.btn--cta {
+  background: #4488ff;
+  color: #fff;
+}
+
+.btn--cta svg {
+  stroke: #fff;
+}
+
+.btn--secondary {
+  background: #fff;
+  color: #4488ff;
+}
+
+.burst-line {
+  position: fixed;
+  height: 2.5px;
+  border-radius: 2px;
+  background: rgba(68, 136, 255, 0.35);
+  pointer-events: none;
+  z-index: 9998;
+  transform-origin: 0% 50%;
+}
+
+@media (max-width: 768px) {
+  .draggable {
+    cursor: default !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
+
+  .draggable:hover {
+    filter: drop-shadow(0px 2px 5px rgba(0, 0, 0, 0.1)) !important;
+  }
+
+  .reset-btn {
+    display: none;
+  }
+
+  .burst-line {
+    display: none;
+  }
+
+  .draggable--icon {
+    left: 50% !important;
+    top: 22% !important;
+    width: 52px !important;
+    height: 52px !important;
+    margin-left: -26px;
+    border-radius: 14px;
+    z-index: 22 !important;
+  }
+
+  .draggable--icon img {
+    border-radius: 14px;
+  }
+
+  .draggable--title {
+    left: 50% !important;
+    top: 32% !important;
+    transform: translateX(-50%) !important;
+    z-index: 21 !important;
+  }
+
+  .draggable--title h1 {
+    font-size: 42px;
+  }
+
+  .draggable--desc {
+    left: 50% !important;
+    top: 44% !important;
+    transform: translateX(-50%) !important;
+    z-index: 20 !important;
+  }
+
+  .draggable--desc p {
+    font-size: 13px;
+    width: 280px;
+    text-align: center;
+  }
+
+  .draggable--btn:first-of-type {
+    left: 50% !important;
+    top: 58% !important;
+    transform: translateX(calc(-100% - 6px)) !important;
+    z-index: 20 !important;
+  }
+
+  .draggable--btn:last-of-type {
+    left: 50% !important;
+    top: 58% !important;
+    transform: translateX(6px) !important;
+    z-index: 19 !important;
+  }
+
+  .btn {
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+
+  .draggable--phone {
+    left: auto !important;
+    right: -40px !important;
+    top: auto !important;
+    bottom: -30px !important;
+    width: 200px !important;
+    z-index: 17 !important;
+    transform: rotate(6deg) !important;
+  }
+
+  .draggable[style*="Frame 3185590"] {
+    width: 90px !important;
+    left: -3% !important;
+    top: -2% !important;
+  }
+
+  .draggable[style*="Frame 3185629"] {
+    width: 50px !important;
+    left: 2% !important;
+    top: 50% !important;
+  }
+
+  .draggable[style*="Group 210"] {
+    width: 80px !important;
+    left: 80% !important;
+    top: -2% !important;
+  }
+
+  .draggable[style*="Group 2619"] {
+    width: 55px !important;
+    left: -3% !important;
+    top: 78% !important;
+  }
+
+  .draggable[style*="Group 2620"] {
+    width: 55px !important;
+    left: 85% !important;
+    top: 55% !important;
+  }
+
+  .draggable[style*="Group 2625"] {
+    width: 80px !important;
+    left: 20% !important;
+    top: 80% !important;
+  }
+
+  .draggable[style*="Group 2626"] {
+    width: 85px !important;
+    left: 70% !important;
+    top: 75% !important;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family:
-    var(--font-geist-sans),
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    "Roboto",
-    "Oxygen",
-    "Ubuntu",
-    "Cantarell",
-    "Fira Sans",
-    "Droid Sans",
-    "Helvetica Neue",
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@media (max-width: 390px) {
+  .draggable--title h1 {
+    font-size: 36px;
+  }
 
-html {
-  scroll-behavior: smooth;
+  .draggable--icon {
+    width: 44px !important;
+    height: 44px !important;
+    margin-left: -22px;
+    top: 20% !important;
+  }
+
+  .draggable--title {
+    top: 29% !important;
+  }
+
+  .draggable--desc {
+    top: 41% !important;
+  }
+
+  .draggable--desc p {
+    width: 240px;
+    font-size: 12px;
+  }
+
+  .draggable--btn:first-of-type {
+    top: 54% !important;
+  }
+
+  .draggable--btn:last-of-type {
+    top: 54% !important;
+  }
+
+  .btn {
+    font-size: 13px;
+    padding: 11px 14px;
+  }
+
+  .draggable--phone {
+    width: 170px !important;
+    right: -50px !important;
+  }
 }
