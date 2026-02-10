@@ -11,8 +11,9 @@ export default function Footer() {
             </span>
             <p className="text-sm mt-2">AI-Powered Navigation App</p>
           </div>
-          <div className="text-sm">
+          <div className="text-sm text-center md:text-right">
             <p>&copy; {new Date().getFullYear()} Mapier. All rights reserved.</p>
+            <p className="mt-1">Built by Mapier Labs in SF with ❤️</p>
           </div>
         </div>
       </div>
