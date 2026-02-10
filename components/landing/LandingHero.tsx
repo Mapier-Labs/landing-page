@@ -47,6 +47,7 @@ export function LandingHero() {
           transform: "rotate(0deg)",
         }}
       >
+        <h2 className="sr-only">AI-Powered Smart Navigation</h2>
         <p>
           Reimagine how you explore, create, and share maps — where artificial intelligence meets
           the art of cartography.
@@ -63,7 +64,7 @@ export function LandingHero() {
           transform: "rotate(0deg)",
         }}
       >
-        <div className="btn btn--cta">
+        <button type="button" className="btn btn--cta" aria-label="Join the Mapier waitlist">
           Join the Waitlist
           <svg
             viewBox="0 0 24 24"
@@ -75,7 +76,7 @@ export function LandingHero() {
             <path d="M5 12h14" />
             <path d="m12 5 7 7-7 7" />
           </svg>
-        </div>
+        </button>
       </Draggable>
 
       <Draggable
