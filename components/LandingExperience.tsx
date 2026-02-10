@@ -236,7 +236,12 @@ export function LandingExperience() {
           transform: "rotate(2deg)",
         }}
       >
-        <img id="app-icon-img" src="" alt="Mapier" draggable={false} />
+        <img
+          id="app-icon-img"
+          src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+          alt="Mapier"
+          draggable={false}
+        />
       </div>
 
       <div
