@@ -1,15 +1,22 @@
 # Mapier Landing Page
 
-# Local Development
+## Prerequisites
+- Node.js >= 18
+- [Corepack](https://nodejs.org/api/corepack.html) enabled (`corepack enable`)
+- Yarn 4 (automatically managed via `packageManager` field in `package.json`)
+
+## Local Development
 ```bash
 # Install dependencies
-npm install
+yarn install
 # Start development server
-npm run dev
+yarn dev
 # Build for production
-npm run build
+yarn build
 # Start production server
-npm start
+yarn start
+# Lint
+yarn lint
 ```
 Visit [http://localhost:3000](http://localhost:3000) to view the page.
 
