@@ -217,7 +217,30 @@ body.is-dragging {
   transform-origin: 0% 50%;
 }
 
+.footer-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  font-size: 12px;
+  color: #888;
+  pointer-events: none;
+}
+
 @media (max-width: 768px) {
+  .footer-bar {
+    flex-direction: column;
+    gap: 2px;
+    text-align: center;
+    padding: 8px 16px;
+    font-size: 11px;
+  }
+
   .draggable {
     cursor: default !important;
     transition: none !important;

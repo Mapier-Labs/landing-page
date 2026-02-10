@@ -48,6 +48,11 @@ export function LandingExperience() {
           <img src={sticker.src} alt="" draggable={false} />
         </Draggable>
       ))}
+
+      <footer className="footer-bar">
+        <span>© {new Date().getFullYear()} Mapier. All rights reserved.</span>
+        <span>Built by Mapier Labs with ❤️ in SF</span>
+      </footer>
     </>
   );
 }
