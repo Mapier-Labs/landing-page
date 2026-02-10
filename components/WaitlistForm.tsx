@@ -77,7 +77,9 @@ export default function WaitlistForm() {
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
+            <label htmlFor="waitlist-name" className="sr-only">Your Name</label>
             <input
+              id="waitlist-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -87,7 +89,9 @@ export default function WaitlistForm() {
             />
           </div>
           <div>
+            <label htmlFor="waitlist-email" className="sr-only">Your Email Address</label>
             <input
+              id="waitlist-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
