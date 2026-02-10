@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { CheckCircle2, Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 
 export default function WaitlistForm() {
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/waitlist', {
-        method: 'POST',
+      const response = await fetch("/api/waitlist", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, name }),
       });
@@ -27,14 +27,14 @@ export default function WaitlistForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Submission failed, please try again later');
+        throw new Error(data.error || "Submission failed, please try again later");
       }
 
       setIsSuccess(true);
-      setEmail('');
-      setName('');
+      setEmail("");
+      setName("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Submission failed, please try again later');
+      setError(err instanceof Error ? err.message : "Submission failed, please try again later");
     } finally {
       setIsSubmitting(false);
     }
@@ -42,16 +42,17 @@ export default function WaitlistForm() {
 
   if (isSuccess) {
     return (
-      <section id="waitlist" className="py-24 px-6 sm:px-8 bg-gradient-to-br from-blue-50 to-purple-50">
+      <section
+        id="waitlist"
+        className="py-24 px-6 sm:px-8 bg-gradient-to-br from-blue-50 to-purple-50"
+      >
         <div className="max-w-2xl mx-auto text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-6">
             <CheckCircle2 className="w-8 h-8 text-green-600" />
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Thank You!
-          </h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Thank You!</h2>
           <p className="text-xl text-gray-600 mb-8">
-            We'll notify you as soon as the product launches
+            We&apos;ll notify you as soon as the product launches
           </p>
           <button
             onClick={() => setIsSuccess(false)}
@@ -65,19 +66,25 @@ export default function WaitlistForm() {
   }
 
   return (
-    <section id="waitlist" className="py-24 px-6 sm:px-8 bg-gradient-to-br from-blue-50 to-purple-50">
+    <section
+      id="waitlist"
+      className="py-24 px-6 sm:px-8 bg-gradient-to-br from-blue-50 to-purple-50"
+    >
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-            Join the Waitlist
-          </h2>
+          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">Join the Waitlist</h2>
           <p className="text-xl text-gray-600">
-            Be among the first to experience Mapier AI navigation and discover the power of intelligent navigation
+            Be among the first to experience Mapier AI navigation and discover the power of
+            intelligent navigation
           </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
+            <label htmlFor="waitlist-name" className="sr-only">
+              Your Name
+            </label>
             <input
+              id="waitlist-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -87,7 +94,11 @@ export default function WaitlistForm() {
             />
           </div>
           <div>
+            <label htmlFor="waitlist-email" className="sr-only">
+              Your Email Address
+            </label>
             <input
+              id="waitlist-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -112,7 +123,7 @@ export default function WaitlistForm() {
                 Submitting...
               </>
             ) : (
-              'Submit'
+              "Submit"
             )}
           </button>
         </form>

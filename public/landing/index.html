@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Mapier</title>
+    <style>
+      @font-face {
+        font-family: "Hornbill";
+        src: url("fonts/HornbillTrial-Bold.ttf") format("truetype");
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --font-serif: "Hornbill", Georgia, "Times New Roman", serif;
+        --font-sans:
+          system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Helvetica Neue", "Segoe UI", sans-serif;
+      }
+
+      ::selection {
+        background: rgba(26, 26, 26, 0.12);
+      }
+
+      html,
+      body {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body.is-dragging {
+        cursor: grabbing !important;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      /* ── Background ── */
+      .bg {
+        position: fixed;
+        inset: 0;
+        background: url("bg-map.png") center / cover no-repeat;
+        z-index: 0;
+      }
+
+      /* ── Reset Button ── */
+      .reset-btn {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 9999;
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background 0.2s,
+          box-shadow 0.2s;
+      }
+      .reset-btn:hover {
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+      }
+      .reset-btn:active {
+        transform: scale(0.92);
+      }
+      .reset-btn svg {
+        width: 18px;
+        height: 18px;
+        color: #555;
+        transition: transform 0.15s ease;
+      }
+
+      /* ── Draggable Items ── */
+      .draggable {
+        position: fixed;
+        cursor: grab;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-user-drag: none;
+        filter: drop-shadow(0px 2px 5px rgba(0, 0, 0, 0.1));
+        transition:
+          filter 0.25s ease,
+          transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        will-change: transform, filter;
+      }
+
+      .draggable img {
+        display: block;
+        width: 100%;
+        height: auto;
+        pointer-events: none;
+        -webkit-user-drag: none;
+      }
+
+      .draggable:hover {
+        filter: drop-shadow(0px 5px 14px rgba(0, 0, 0, 0.18));
+      }
+
+      .draggable.is-grabbing {
+        cursor: grabbing;
+        filter: drop-shadow(0px 16px 28px rgba(0, 0, 0, 0.2));
+        transition:
+          filter 0.15s ease,
+          transform 0.15s ease-out;
+      }
+
+      /* ── Text Elements ── */
+      .draggable--desc p {
+        font-family: var(--font-sans);
+        font-size: clamp(13px, 1.2vw, 15px);
+        color: #999;
+        font-weight: 400;
+        letter-spacing: 0.04em;
+        line-height: 1.6;
+        width: clamp(280px, 30vw, 400px);
+        pointer-events: none;
+      }
+
+      .draggable--icon {
+        border-radius: 22px;
+        overflow: hidden;
+      }
+      .draggable--icon img {
+        width: 100%;
+        height: 100%;
+        border-radius: 22px;
+        object-fit: cover;
+      }
+
+      .draggable--title h1 {
+        font-family: var(--font-serif);
+        font-size: clamp(52px, 8vw, 100px);
+        font-weight: 700;
+        color: #1a1a1a;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+
+      .draggable--phone {
+        filter: drop-shadow(0px 4px 20px rgba(0, 0, 0, 0.12));
+      }
+      .draggable--phone:hover {
+        filter: drop-shadow(0px 6px 24px rgba(0, 0, 0, 0.18));
+      }
+      .draggable--phone.is-grabbing {
+        filter: drop-shadow(0px 20px 40px rgba(0, 0, 0, 0.22));
+      }
+
+      /* ── Buttons (each is its own draggable) ── */
+      .draggable--btn {
+        filter: drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.08));
+      }
+      .draggable--btn:hover {
+        filter: drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.14));
+      }
+      .draggable--btn.is-grabbing {
+        filter: drop-shadow(0px 12px 24px rgba(0, 0, 0, 0.18));
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-family: var(--font-sans);
+        font-size: 16px;
+        font-weight: 590;
+        border: none;
+        border-radius: 220px;
+        cursor: inherit;
+        padding: 14px 18px;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .btn svg {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+      }
+
+      .btn--cta {
+        background: #4488ff;
+        color: #fff;
+      }
+      .btn--cta svg {
+        stroke: #fff;
+      }
+
+      .btn--secondary {
+        background: #fff;
+        color: #4488ff;
+      }
+
+      /* ── Burst Impact Lines ── */
+      .burst-line {
+        position: fixed;
+        height: 2.5px;
+        border-radius: 2px;
+        background: rgba(68, 136, 255, 0.35);
+        pointer-events: none;
+        z-index: 9998;
+        transform-origin: 0% 50%;
+      }
+
+      /* ── Mobile: fixed layout, no drag, stickers stay ── */
+      @media (max-width: 768px) {
+        /* Disable drag visuals */
+        .draggable {
+          cursor: default !important;
+          transition: none !important;
+          will-change: auto !important;
+        }
+        .draggable:hover {
+          filter: drop-shadow(0px 2px 5px rgba(0, 0, 0, 0.1)) !important;
+        }
+
+        .reset-btn {
+          display: none;
+        }
+        .burst-line {
+          display: none;
+        }
+
+        /* ── Brand content: centered ── */
+        .draggable--icon {
+          left: 50% !important;
+          top: 22% !important;
+          width: 52px !important;
+          height: 52px !important;
+          margin-left: -26px;
+          border-radius: 14px;
+          z-index: 22 !important;
+        }
+        .draggable--icon img {
+          border-radius: 14px;
+        }
+
+        .draggable--title {
+          left: 50% !important;
+          top: 32% !important;
+          transform: translateX(-50%) !important;
+          z-index: 21 !important;
+        }
+        .draggable--title h1 {
+          font-size: 42px;
+        }
+
+        .draggable--desc {
+          left: 50% !important;
+          top: 44% !important;
+          transform: translateX(-50%) !important;
+          z-index: 20 !important;
+        }
+        .draggable--desc p {
+          font-size: 13px;
+          width: 280px;
+          text-align: center;
+        }
+
+        /* Buttons centered */
+        .draggable--btn:first-of-type {
+          left: 50% !important;
+          top: 58% !important;
+          transform: translateX(calc(-100% - 6px)) !important;
+          z-index: 20 !important;
+        }
+        .draggable--btn:last-of-type {
+          left: 50% !important;
+          top: 58% !important;
+          transform: translateX(6px) !important;
+          z-index: 19 !important;
+        }
+        .btn {
+          font-size: 14px;
+          padding: 12px 16px;
+        }
+
+        /* Phone: peek from bottom-right, partially off-screen */
+        .draggable--phone {
+          left: auto !important;
+          right: -40px !important;
+          top: auto !important;
+          bottom: -30px !important;
+          width: 200px !important;
+          z-index: 17 !important;
+          transform: rotate(6deg) !important;
+        }
+
+        /* Stickers: keep but smaller, reposition to edges */
+        .draggable[style*="Frame 3185590"] {
+          width: 90px !important;
+          left: -3% !important;
+          top: -2% !important;
+        }
+        .draggable[style*="Frame 3185629"] {
+          width: 50px !important;
+          left: 2% !important;
+          top: 50% !important;
+        }
+        .draggable[style*="Group 210"] {
+          width: 80px !important;
+          left: 80% !important;
+          top: -2% !important;
+        }
+        .draggable[style*="Group 2619"] {
+          width: 55px !important;
+          left: -3% !important;
+          top: 78% !important;
+        }
+        .draggable[style*="Group 2620"] {
+          width: 55px !important;
+          left: 85% !important;
+          top: 55% !important;
+        }
+        .draggable[style*="Group 2625"] {
+          width: 80px !important;
+          left: 20% !important;
+          top: 80% !important;
+        }
+        .draggable[style*="Group 2626"] {
+          width: 85px !important;
+          left: 70% !important;
+          top: 75% !important;
+        }
+      }
+
+      @media (max-width: 390px) {
+        .draggable--title h1 {
+          font-size: 36px;
+        }
+        .draggable--icon {
+          width: 44px !important;
+          height: 44px !important;
+          margin-left: -22px;
+          top: 20% !important;
+        }
+        .draggable--title {
+          top: 29% !important;
+        }
+        .draggable--desc {
+          top: 41% !important;
+        }
+        .draggable--desc p {
+          width: 240px;
+          font-size: 12px;
+        }
+        .draggable--btn:first-of-type {
+          top: 54% !important;
+        }
+        .draggable--btn:last-of-type {
+          top: 54% !important;
+        }
+        .btn {
+          font-size: 13px;
+          padding: 11px 14px;
+        }
+        .draggable--phone {
+          width: 170px !important;
+          right: -50px !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg"></div>
+
+    <!-- Reset Button -->
+    <button class="reset-btn" title="Reset layout">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="1 4 1 10 7 10"></polyline>
+        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+      </svg>
+    </button>
+
+    <!-- ── App Icon ── -->
+    <div
+      class="draggable draggable--icon"
+      data-init-rotate="2"
+      style="left: 14%; top: 30%; width: 88px; height: 88px; z-index: 22; transform: rotate(2deg)"
+    >
+      <img id="app-icon-img" src="" alt="Mapier" draggable="false" />
+    </div>
+
+    <!-- ── Title ── -->
+    <div
+      class="draggable draggable--title"
+      data-init-rotate="-1"
+      style="left: calc(14% + 102px); top: 31%; z-index: 21; transform: rotate(-1deg)"
+    >
+      <h1>Mapier</h1>
+    </div>
+
+    <!-- ── Description ── -->
+    <div
+      class="draggable draggable--desc"
+      data-init-rotate="0"
+      style="left: 14%; top: 48%; z-index: 20; transform: rotate(0deg)"
+    >
+      <p>
+        Reimagine how you explore, create, and share maps — where artificial intelligence meets the
+        art of cartography.
+      </p>
+    </div>
+
+    <!-- ── CTA Button ── -->
+    <div
+      class="draggable draggable--btn"
+      data-init-rotate="0"
+      style="left: 14%; top: 64%; z-index: 20; transform: rotate(0deg)"
+    >
+      <div class="btn btn--cta">
+        Join the Waitlist<svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- ── Secondary Button ── -->
+    <div
+      class="draggable draggable--btn"
+      data-init-rotate="0"
+      style="left: calc(14% + 210px); top: 64%; z-index: 19; transform: rotate(0deg)"
+    >
+      <div class="btn btn--secondary">Work With Us</div>
+    </div>
+
+    <!-- ── Phone Mockup ── -->
+    <div
+      class="draggable draggable--phone"
+      data-init-rotate="3"
+      style="left: 64%; top: 12%; width: 260px; z-index: 18; transform: rotate(3deg)"
+    >
+      <img src="stickers/phone.png" alt="Mapier App" draggable="false" />
+    </div>
+
+    <!-- ── Stickers (pushed toward edges) ── -->
+
+    <!-- Dali clock + pen — top-left, partially off-screen -->
+    <div
+      class="draggable"
+      data-init-rotate="-12"
+      style="left: -2%; top: -3%; width: 150px; z-index: 13; transform: rotate(-12deg)"
+    >
+      <img src="stickers/Frame 3185590.png" alt="" draggable="false" />
+    </div>
+
+    <!-- Portrait with blue beam — far left -->
+    <div
+      class="draggable"
+      data-init-rotate="5"
+      style="right: 45%; top: 50%; width: 80px; z-index: 11; transform: rotate(5deg)"
+    >
+      <img src="stickers/Frame 3185629.png" alt="" draggable="false" />
+    </div>
+
+    <!-- Van Gogh — top-right, partially off -->
+    <div
+      class="draggable"
+      data-init-rotate="8"
+      style="left: 88%; top: -4%; width: 130px; z-index: 14; transform: rotate(8deg)"
+    >
+      <img src="stickers/Group 210.png" alt="" draggable="false" />
+    </div>
+
+    <!-- Hand writing — bottom-left edge -->
+    <div
+      class="draggable"
+      data-init-rotate="10"
+      style="left: -2%; top: 80%; width: 90px; z-index: 10; transform: rotate(10deg)"
+    >
+      <img src="stickers/Group 2619.png" alt="" draggable="false" />
+    </div>
+
+    <!-- Envelope — far right -->
+    <div
+      class="draggable"
+      data-init-rotate="-6"
+      style="left: 92%; top: 62%; width: 85px; z-index: 10; transform: rotate(-6deg)"
+    >
+      <img src="stickers/Group 2620.png" alt="" draggable="false" />
+    </div>
+
+    <!-- Magritte Son of Man — bottom, slightly off -->
+    <div
+      class="draggable"
+      data-init-rotate="-4"
+      style="left: 30%; top: 76%; width: 135px; z-index: 15; transform: rotate(-4deg)"
+    >
+      <img src="stickers/Group 2625.png" alt="" draggable="false" />
+    </div>
+
+    <!-- Hermes angel — bottom-right -->
+    <div
+      class="draggable"
+      data-init-rotate="4"
+      style="left: 76%; top: 74%; width: 140px; z-index: 14; transform: rotate(4deg)"
+    >
+      <img src="stickers/Group 2626.png" alt="" draggable="false" />
+    </div>
+
+    <script>
+      (() => {
+        /* ────────────────────── Random App Icon ────────────────────── */
+        const iconVariants = [
+          "app icon/Property 1=Default.png",
+          "app icon/Property 1=Variant2.png",
+          "app icon/Property 1=Variant3.png",
+        ];
+        const picked = iconVariants[Math.floor(Math.random() * iconVariants.length)];
+        document.getElementById("app-icon-img").src = picked;
+
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+        /* ────────────────────── Setup ────────────────────── */
+        const draggables = document.querySelectorAll(".draggable");
+        let topZ = 30;
+        let resetting = false;
+
+        // Save initial style for reset
+        draggables.forEach((el) => {
+          el._initStyle = el.getAttribute("style");
+        });
+
+        if (!isMobile) {
+          draggables.forEach(initDraggable);
+        }
+
+        /* ────────────────────── Entrance: ice glide (desktop only) ────────────────────── */
+        if (!isMobile) {
+          draggables.forEach((el, i) => {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 18 + Math.random() * 14;
+            const dx = Math.cos(angle) * dist;
+            const dy = Math.sin(angle) * dist;
+            const base = el.style.transform;
+            el.animate(
+              [{ transform: "translate(" + dx + "px," + dy + "px) " + base }, { transform: base }],
+              {
+                duration: 1400 + Math.random() * 400,
+                easing: "cubic-bezier(0.08, 0.6, 0.18, 1)",
+                delay: i * 60,
+                fill: "backwards",
+              }
+            );
+          });
+        }
+
+        /* ────────────────────── Drag Logic ────────────────────── */
+        function initDraggable(el) {
+          let dragging = false;
+          let hovering = false;
+          let ox,
+            oy,
+            grabRotate = 0;
+
+          // Track rotation through all states
+          el._baseRotate = parseFloat(el.dataset.initRotate) || 0;
+          el._hoverRotate = el._baseRotate;
+
+          /* ── Hover: subtle angle nudge ── */
+          el.addEventListener("mouseenter", () => {
+            if (dragging || resetting) return;
+            hovering = true;
+            const nudge = (Math.random() > 0.5 ? 1 : -1) * (1.5 + Math.random() * 2);
+            el._hoverRotate = el._baseRotate + nudge;
+            el.style.transform = "rotate(" + el._hoverRotate + "deg)";
+          });
+
+          el.addEventListener("mouseleave", () => {
+            if (dragging) return;
+            hovering = false;
+            el.style.transform = "rotate(" + el._baseRotate + "deg)";
+          });
+
+          /* ── Grab ── */
+          function onGrab(e) {
+            if (resetting) return;
+            e.preventDefault();
+            dragging = true;
+            topZ++;
+            el.style.zIndex = topZ;
+
+            const pt = e.touches ? e.touches[0] : e;
+            const rect = el.getBoundingClientRect();
+            ox = pt.clientX - rect.left;
+            oy = pt.clientY - rect.top;
+
+            el.style.left = rect.left + "px";
+            el.style.top = rect.top + "px";
+            el.style.right = "auto";
+            el.style.bottom = "auto";
+
+            // Continue from hover angle — no snap
+            const base = hovering ? el._hoverRotate : el._baseRotate;
+            grabRotate = +(base + (Math.random() - 0.5) * 4).toFixed(1);
+            el.style.transform = "scale(0.92) rotate(" + grabRotate + "deg)";
+            el.classList.add("is-grabbing");
+            document.body.classList.add("is-dragging");
+          }
+
+          /* ── Move ── */
+          function onMove(e) {
+            if (!dragging) return;
+            e.preventDefault();
+            const pt = e.touches ? e.touches[0] : e;
+            el.style.left = pt.clientX - ox + "px";
+            el.style.top = pt.clientY - oy + "px";
+          }
+
+          /* ── Release ── */
+          function onRelease() {
+            if (!dragging) return;
+            dragging = false;
+            hovering = false;
+            el.classList.remove("is-grabbing");
+            document.body.classList.remove("is-dragging");
+
+            const bounce = el.animate(
+              [
+                {
+                  transform: "scale(0.92) rotate(" + grabRotate + "deg)",
+                  filter: "drop-shadow(0px 16px 28px rgba(0,0,0,0.20))",
+                },
+                {
+                  transform: "scale(1) rotate(0deg)",
+                  filter: "drop-shadow(0px 2px 5px rgba(0,0,0,0.10))",
+                },
+              ],
+              {
+                duration: 350,
+                easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+                fill: "forwards",
+              }
+            );
+
+            bounce.onfinish = () => {
+              bounce.cancel();
+              el.style.transform = "rotate(0deg)";
+              el.style.filter = "";
+              el._baseRotate = 0;
+              el._hoverRotate = 0;
+            };
+
+            createBurst(el);
+          }
+
+          el.addEventListener("mousedown", onGrab);
+          el.addEventListener("touchstart", onGrab, { passive: false });
+          document.addEventListener("mousemove", onMove);
+          document.addEventListener("touchmove", onMove, { passive: false });
+          document.addEventListener("mouseup", onRelease);
+          document.addEventListener("touchend", onRelease);
+        }
+
+        /* ────────────────────── Burst Lines ────────────────────── */
+        function createBurst(el) {
+          const rect = el.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          const radius = Math.max(rect.width, rect.height) * 0.48;
+
+          const count = 7 + Math.floor(Math.random() * 3);
+          const angleStep = 360 / count;
+
+          for (let i = 0; i < count; i++) {
+            const angle = angleStep * i + (Math.random() - 0.5) * angleStep * 0.6;
+            const rad = (angle * Math.PI) / 180;
+            const dist = radius + 6 + Math.random() * 8;
+            const len = 11 + Math.random() * 15;
+
+            const line = document.createElement("div");
+            line.className = "burst-line";
+            line.style.width = len + "px";
+            line.style.left = cx + Math.cos(rad) * dist + "px";
+            line.style.top = cy + Math.sin(rad) * dist - 1.25 + "px";
+            document.body.appendChild(line);
+
+            const dur = 300 + Math.random() * 100;
+            line.animate(
+              [
+                { opacity: 0, transform: "rotate(" + angle + "deg) scaleX(0)" },
+                { opacity: 0.8, transform: "rotate(" + angle + "deg) scaleX(1)", offset: 0.25 },
+                { opacity: 0.4, transform: "rotate(" + angle + "deg) scaleX(0.85)", offset: 0.6 },
+                { opacity: 0, transform: "rotate(" + angle + "deg) scaleX(0.6)" },
+              ],
+              { duration: dur, easing: "ease-out", fill: "forwards" }
+            );
+
+            setTimeout(() => line.remove(), dur + 50);
+          }
+        }
+
+        /* ────────────────────── Reset ────────────────────── */
+        document.querySelector(".reset-btn").addEventListener("click", () => {
+          if (resetting) return;
+          resetting = true;
+
+          const items = Array.from(draggables);
+          const totalDur = 450;
+          let finished = 0;
+
+          // Measure current positions + target positions via hidden clones
+          const snapshots = items.map((el) => {
+            const from = el.getBoundingClientRect();
+
+            // Hidden clone with initial style to measure target — no visual flash
+            const clone = el.cloneNode(true);
+            clone.setAttribute("style", el._initStyle);
+            clone.style.visibility = "hidden";
+            clone.style.pointerEvents = "none";
+            document.body.appendChild(clone);
+            const to = clone.getBoundingClientRect();
+            clone.remove();
+
+            return {
+              el,
+              dx: to.left - from.left,
+              dy: to.top - from.top,
+              initRotate: el.dataset.initRotate || "0",
+            };
+          });
+
+          // Animate from current position toward target using translate
+          snapshots.forEach((s, i) => {
+            const anim = s.el.animate(
+              [
+                { transform: "translate(0,0) rotate(0deg)" },
+                {
+                  transform:
+                    "translate(" + s.dx + "px," + s.dy + "px) rotate(" + s.initRotate + "deg)",
+                },
+              ],
+              {
+                duration: totalDur,
+                easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+                delay: i * 20,
+                fill: "forwards",
+              }
+            );
+
+            anim.onfinish = () => {
+              s.el.setAttribute("style", s.el._initStyle);
+              anim.cancel();
+              // Restore rotation tracking
+              s.el._baseRotate = parseFloat(s.el.dataset.initRotate) || 0;
+              s.el._hoverRotate = s.el._baseRotate;
+              finished++;
+              if (finished === items.length) {
+                resetting = false;
+                topZ = 30;
+              }
+            };
+          });
+
+          // Button icon spin
+          const svg = document.querySelector(".reset-btn svg");
+          svg.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(-360deg)" }], {
+            duration: totalDur,
+            easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>
