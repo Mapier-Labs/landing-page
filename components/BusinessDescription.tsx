@@ -23,7 +23,7 @@ export default function BusinessDescription() {
                 Mapier is an AI-powered navigation application that leverages Large Language Model (LLM) technology to understand complex, natural language user intents and deliver personalized, intelligent navigation experiences.
               </p>
               <p className="text-gray-600 leading-relaxed">
-                Unlike traditional navigation apps that require specific addresses or predefined searches, Mapier interprets conversational requests like "find the nearest restroom" or "take me to a quiet coffee shop with WiFi" and provides accurate, context-aware navigation solutions.
+                Unlike traditional navigation apps that require specific addresses or predefined searches, Mapier interprets conversational requests like &ldquo;find the nearest restroom&rdquo; or &ldquo;take me to a quiet coffee shop with WiFi&rdquo; and provides accurate, context-aware navigation solutions.
               </p>
             </div>
 
@@ -39,11 +39,11 @@ export default function BusinessDescription() {
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
-                  <span><strong>Lack of Personalization:</strong> Current solutions don't learn from user preferences, habits, or context, resulting in generic, one-size-fits-all experiences.</span>
+                  <span><strong>Lack of Personalization:</strong> Current solutions don&apos;t learn from user preferences, habits, or context, resulting in generic, one-size-fits-all experiences.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
-                  <span><strong>Limited Voice Interaction:</strong> Most navigation apps have basic voice commands but can't handle conversational, intent-based requests.</span>
+                  <span><strong>Limited Voice Interaction:</strong> Most navigation apps have basic voice commands but can&apos;t handle conversational, intent-based requests.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-600 mr-2">•</span>
