@@ -23,10 +23,15 @@ body {
     "Segoe UI",
     sans-serif;
   -webkit-font-smoothing: antialiased;
+  cursor:
+    url("/cursors/normal.png") 12 4,
+    default;
 }
 
 body.is-dragging {
-  cursor: grabbing !important;
+  cursor:
+    url("/cursors/hold.png") 24 24,
+    grabbing !important;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -51,7 +56,9 @@ body.is-dragging {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
-  cursor: pointer;
+  cursor:
+    url("/cursors/hover.png") 12 4,
+    pointer;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,7 +85,9 @@ body.is-dragging {
 
 .draggable {
   position: fixed;
-  cursor: grab;
+  cursor:
+    url("/cursors/hover.png") 12 4,
+    grab;
   user-select: none;
   -webkit-user-select: none;
   -webkit-user-drag: none;
@@ -102,11 +111,25 @@ body.is-dragging {
 }
 
 .draggable.is-grabbing {
-  cursor: grabbing;
+  cursor:
+    url("/cursors/hold.png") 24 24,
+    grabbing;
   filter: drop-shadow(0px 16px 28px rgba(0, 0, 0, 0.2));
   transition:
     filter 0.15s ease,
     transform 0.15s ease-out;
+}
+
+.draggable.is-releasing {
+  cursor:
+    url("/cursors/release.png") 24 24,
+    default;
+}
+
+body.is-releasing {
+  cursor:
+    url("/cursors/release.png") 24 24,
+    default !important;
 }
 
 .draggable--desc p {
@@ -203,7 +226,9 @@ body.is-dragging {
 
 .btn--link {
   pointer-events: auto;
-  cursor: pointer;
+  cursor:
+    url("/cursors/hover.png") 12 4,
+    pointer;
   text-decoration: none;
 }
 
@@ -411,4 +436,90 @@ body.is-dragging {
     width: 170px !important;
     right: -50px !important;
   }
+}
+
+/* 404 Page */
+.not-found {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.not-found__bg {
+  position: fixed;
+  inset: 0;
+  background: url("/landing/bg-map.png") center / cover no-repeat;
+  filter: blur(6px) brightness(0.92);
+  z-index: 0;
+}
+
+.not-found__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 40px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.08);
+}
+
+.not-found__title {
+  font-family: "Hornbill", Georgia, "Times New Roman", serif;
+  font-size: clamp(72px, 12vw, 120px);
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.not-found__desc {
+  font-size: clamp(14px, 1.4vw, 18px);
+  color: #888;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.not-found__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 590;
+  color: #fff;
+  background: #4488ff;
+  border: none;
+  border-radius: 220px;
+  text-decoration: none;
+  cursor:
+    url("/cursors/hover.png") 12 4,
+    pointer;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.not-found__btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(68, 136, 255, 0.3);
+}
+
+.not-found__btn:active {
+  transform: scale(0.97);
+}
+
+.not-found__btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: #fff;
 }

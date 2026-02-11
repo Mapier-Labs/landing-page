@@ -49,6 +49,11 @@ export function useDraggableLanding() {
       let ox = 0;
       let oy = 0;
       let grabRotate = 0;
+      let pending = false;
+      let didDrag = false;
+      let startX = 0;
+      let startY = 0;
+      const DRAG_THRESHOLD = 5;
 
       const baseRotate = parseFloat(el.dataset.initRotate ?? "0") || 0;
       const ext = el as HTMLElement & {
@@ -73,16 +78,51 @@ export function useDraggableLanding() {
         el.style.transform = `rotate(${baseRotate}deg)`;
       };
 
+      function promoteToDrag(e: MouseEvent | TouchEvent) {
+        pending = false;
+        didDrag = true;
+        dragging = true;
+        topZ += 1;
+        el.style.zIndex = String(topZ);
+
+        const rect = el.getBoundingClientRect();
+        ox = startX - rect.left;
+        oy = startY - rect.top;
+
+        el.style.left = `${rect.left}px`;
+        el.style.top = `${rect.top}px`;
+        el.style.right = "auto";
+        el.style.bottom = "auto";
+
+        const base = hovering ? ext._hoverRotate : baseRotate;
+        grabRotate = Number((base! + (Math.random() - 0.5) * 4).toFixed(1));
+        el.style.transform = `scale(0.92) rotate(${grabRotate}deg)`;
+        el.classList.add("is-grabbing");
+        document.body.classList.add("is-dragging");
+
+        const pt = "touches" in e ? e.touches[0] : e;
+        el.style.left = `${pt.clientX - ox}px`;
+        el.style.top = `${pt.clientY - oy}px`;
+      }
+
       const onGrab = (e: MouseEvent | TouchEvent) => {
         if (resetting) return;
+        const pt = "touches" in e ? e.touches[0] : e;
+        startX = pt.clientX;
+        startY = pt.clientY;
+
         const target = e.target as HTMLElement;
-        if (target.closest("a[href]")) return;
+        if (target.closest("a[href]")) {
+          pending = true;
+          e.preventDefault();
+          return;
+        }
+
         e.preventDefault();
         dragging = true;
         topZ += 1;
         el.style.zIndex = String(topZ);
 
-        const pt = "touches" in e ? e.touches[0] : e;
         const rect = el.getBoundingClientRect();
         ox = pt.clientX - rect.left;
         oy = pt.clientY - rect.top;
@@ -100,6 +140,15 @@ export function useDraggableLanding() {
       };
 
       const onMove = (e: MouseEvent | TouchEvent) => {
+        if (pending) {
+          const pt = "touches" in e ? e.touches[0] : e;
+          const dx = pt.clientX - startX;
+          const dy = pt.clientY - startY;
+          if (Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD) {
+            promoteToDrag(e);
+          }
+          return;
+        }
         if (!dragging) return;
         e.preventDefault();
         const pt = "touches" in e ? e.touches[0] : e;
@@ -108,11 +157,21 @@ export function useDraggableLanding() {
       };
 
       const onRelease = () => {
+        if (pending) {
+          pending = false;
+          const link = el.querySelector("a[href]") as HTMLAnchorElement | null;
+          if (link) {
+            window.open(link.href, link.target || "_self");
+          }
+          return;
+        }
         if (!dragging) return;
         dragging = false;
         hovering = false;
         el.classList.remove("is-grabbing");
+        el.classList.add("is-releasing");
         document.body.classList.remove("is-dragging");
+        document.body.classList.add("is-releasing");
 
         const bounce = el.animate(
           [
@@ -138,10 +197,23 @@ export function useDraggableLanding() {
           el.style.filter = "";
           ext._baseRotate = 0;
           ext._hoverRotate = 0;
+          el.classList.remove("is-releasing");
+          document.body.classList.remove("is-releasing");
         };
 
         createBurst(el);
       };
+
+      const links = el.querySelectorAll("a[href]");
+      links.forEach((link) => {
+        link.addEventListener("click", (e) => {
+          if (didDrag) {
+            e.preventDefault();
+            e.stopPropagation();
+            didDrag = false;
+          }
+        });
+      });
 
       el.addEventListener("mouseenter", onMouseEnter);
       el.addEventListener("mouseleave", onMouseLeave);

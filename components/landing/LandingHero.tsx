@@ -64,7 +64,11 @@ export function LandingHero() {
           transform: "rotate(0deg)",
         }}
       >
-        <button type="button" className="btn btn--cta" aria-label="Join the Mapier waitlist">
+        <a
+          href="#waitlist"
+          className="btn btn--cta btn--link"
+          aria-label="Join the Mapier waitlist"
+        >
           Join the Waitlist
           <svg
             viewBox="0 0 24 24"
@@ -76,7 +80,7 @@ export function LandingHero() {
             <path d="M5 12h14" />
             <path d="m12 5 7 7-7 7" />
           </svg>
-        </button>
+        </a>
       </Draggable>
 
       <Draggable
