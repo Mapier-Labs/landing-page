@@ -23,11 +23,15 @@ body {
     "Segoe UI",
     sans-serif;
   -webkit-font-smoothing: antialiased;
-  cursor: url("/cursors/normal.png") 12 4, default;
+  cursor:
+    url("/cursors/normal.png") 12 4,
+    default;
 }
 
 body.is-dragging {
-  cursor: url("/cursors/hold.png") 24 24, grabbing !important;
+  cursor:
+    url("/cursors/hold.png") 24 24,
+    grabbing !important;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -52,7 +56,9 @@ body.is-dragging {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
-  cursor: url("/cursors/hover.png") 12 4, pointer;
+  cursor:
+    url("/cursors/hover.png") 12 4,
+    pointer;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,7 +85,9 @@ body.is-dragging {
 
 .draggable {
   position: fixed;
-  cursor: url("/cursors/hover.png") 12 4, grab;
+  cursor:
+    url("/cursors/hover.png") 12 4,
+    grab;
   user-select: none;
   -webkit-user-select: none;
   -webkit-user-drag: none;
@@ -103,7 +111,9 @@ body.is-dragging {
 }
 
 .draggable.is-grabbing {
-  cursor: url("/cursors/hold.png") 24 24, grabbing;
+  cursor:
+    url("/cursors/hold.png") 24 24,
+    grabbing;
   filter: drop-shadow(0px 16px 28px rgba(0, 0, 0, 0.2));
   transition:
     filter 0.15s ease,
@@ -111,11 +121,15 @@ body.is-dragging {
 }
 
 .draggable.is-releasing {
-  cursor: url("/cursors/release.png") 24 24, default;
+  cursor:
+    url("/cursors/release.png") 24 24,
+    default;
 }
 
 body.is-releasing {
-  cursor: url("/cursors/release.png") 24 24, default !important;
+  cursor:
+    url("/cursors/release.png") 24 24,
+    default !important;
 }
 
 .draggable--desc p {
@@ -212,7 +226,9 @@ body.is-releasing {
 
 .btn--link {
   pointer-events: auto;
-  cursor: url("/cursors/hover.png") 12 4, pointer;
+  cursor:
+    url("/cursors/hover.png") 12 4,
+    pointer;
   text-decoration: none;
 }
 
@@ -485,7 +501,9 @@ body.is-releasing {
   border: none;
   border-radius: 220px;
   text-decoration: none;
-  cursor: url("/cursors/hover.png") 12 4, pointer;
+  cursor:
+    url("/cursors/hover.png") 12 4,
+    pointer;
   transition:
     transform 0.2s,
     box-shadow 0.2s;

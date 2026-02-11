@@ -6,9 +6,7 @@ export default function NotFound() {
       <div className="not-found__bg" />
       <div className="not-found__content">
         <h1 className="not-found__title">404</h1>
-        <p className="not-found__desc">
-          Looks like you wandered off the map.
-        </p>
+        <p className="not-found__desc">Looks like you wandered off the map.</p>
         <Link href="/" className="not-found__btn">
           Back to Home
           <svg
