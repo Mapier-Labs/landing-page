@@ -381,10 +381,16 @@ body.is-releasing {
     top: 55% !important;
   }
 
-  .draggable[style*="Group 2625"] {
+  .draggable[style*="Group 2627"] {
     width: 80px !important;
     left: 20% !important;
     top: 80% !important;
+  }
+
+  .draggable[style*="Group 2628"] {
+    width: 75px !important;
+    left: 42% !important;
+    top: 82% !important;
   }
 
   .draggable[style*="Group 2626"] {
