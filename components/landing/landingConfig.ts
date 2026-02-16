@@ -31,9 +31,14 @@ export const STICKERS = [
     style: { left: "92%", top: "62%", width: 85, zIndex: 10, transform: "rotate(-6deg)" },
   },
   {
-    src: "/landing/stickers/Group 2625.png",
+    src: "/landing/stickers/Group 2627.png",
     initRotate: -4,
     style: { left: "30%", top: "76%", width: 135, zIndex: 15, transform: "rotate(-4deg)" },
+  },
+  {
+    src: "/landing/stickers/Group 2628.png",
+    initRotate: 7,
+    style: { left: "50%", top: "82%", width: 120, zIndex: 12, transform: "rotate(7deg)" },
   },
   {
     src: "/landing/stickers/Group 2626.png",
