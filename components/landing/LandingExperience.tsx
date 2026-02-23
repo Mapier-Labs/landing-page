@@ -1,13 +1,44 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useState, useEffect, useCallback, type CSSProperties } from "react";
 import { useDraggableLanding } from "@/hooks/useDraggableLanding";
 import { Draggable } from "./Draggable";
 import { LandingHero } from "./LandingHero";
+import { WaitlistModal } from "./WaitlistModal";
 import { STICKERS } from "./landingConfig";
 
 export function LandingExperience() {
   useDraggableLanding();
+
+  const [waitlistOpen, setWaitlistOpen] = useState(false);
+
+  const closeWaitlist = useCallback(() => setWaitlistOpen(false), []);
+
+  useEffect(() => {
+    const onHash = () => {
+      if (window.location.hash === "#waitlist") {
+        setWaitlistOpen(true);
+        history.replaceState(null, "", window.location.pathname);
+      }
+    };
+    window.addEventListener("hashchange", onHash);
+    onHash();
+
+    // Also listen for direct clicks on waitlist links (more reliable on mobile + desktop draggable)
+    const onClick = (e: MouseEvent) => {
+      const link = (e.target as HTMLElement).closest('a[href="#waitlist"]');
+      if (link) {
+        e.preventDefault();
+        setWaitlistOpen(true);
+      }
+    };
+    document.addEventListener("click", onClick);
+
+    return () => {
+      window.removeEventListener("hashchange", onHash);
+      document.removeEventListener("click", onClick);
+    };
+  }, []);
 
   return (
     <>
@@ -53,6 +84,8 @@ export function LandingExperience() {
         <span>© {new Date().getFullYear()} Mapier. All rights reserved.</span>
         <span>Built by Mapier Labs with ❤️ in SF</span>
       </footer>
+
+      <WaitlistModal open={waitlistOpen} onClose={closeWaitlist} />
     </>
   );
 }

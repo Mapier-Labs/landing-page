@@ -28,11 +28,7 @@ export async function POST(request: NextRequest) {
     console.log("Waitlist submission:", { email, name, timestamp: new Date().toISOString() });
 
     return NextResponse.json(
-      {
-        success: true,
-        message: "Successfully joined the waitlist!",
-        data: { email, name },
-      },
+      { success: true, message: "Successfully joined the waitlist!" },
       { status: 200 }
     );
   } catch (error) {

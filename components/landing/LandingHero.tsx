@@ -48,10 +48,7 @@ export function LandingHero() {
         }}
       >
         <h2 className="sr-only">AI-Powered Smart Navigation</h2>
-        <p>
-          Reimagine how you explore, create, and share maps — where artificial intelligence meets
-          the art of cartography.
-        </p>
+        <p>Unlock the hidden layer in your city.</p>
       </Draggable>
 
       <Draggable

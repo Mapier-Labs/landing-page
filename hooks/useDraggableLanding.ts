@@ -161,7 +161,12 @@ export function useDraggableLanding() {
           pending = false;
           const link = el.querySelector("a[href]") as HTMLAnchorElement | null;
           if (link) {
-            window.open(link.href, link.target || "_self");
+            // For hash links, dispatch a real click so React listeners can catch it
+            if (link.getAttribute("href")?.startsWith("#")) {
+              link.click();
+            } else {
+              window.open(link.href, link.target || "_self");
+            }
           }
           return;
         }
