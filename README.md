@@ -50,6 +50,7 @@ The landing page (`app/page.tsx`) renders a draggable interactive hero experienc
 4. Success/error states displayed in modal
 
 **API Route** (`app/api/waitlist/route.ts`):
+
 - Validates email format and required fields
 - Currently logs submissions to console
 - **TODO**: Connect to a storage backend (database, Airtable, Vercel KV, etc.) — replace the `console.log` on line 28
@@ -65,15 +66,15 @@ The landing page (`app/page.tsx`) renders a draggable interactive hero experienc
 
 ### Key Files
 
-| File | Purpose |
-|------|---------|
-| `app/globals.css` | All styles including mobile breakpoints and waitlist modal |
-| `components/landing/LandingExperience.tsx` | Main component, waitlist state management |
-| `components/landing/LandingHero.tsx` | Hero content and CTA buttons |
-| `components/landing/WaitlistModal.tsx` | Waitlist modal component |
-| `components/landing/landingConfig.ts` | Sticker positions/sizes and config constants |
-| `hooks/useDraggableLanding.ts` | Desktop drag-and-drop behavior |
-| `app/api/waitlist/route.ts` | Waitlist API endpoint |
+| File                                       | Purpose                                                    |
+| ------------------------------------------ | ---------------------------------------------------------- |
+| `app/globals.css`                          | All styles including mobile breakpoints and waitlist modal |
+| `components/landing/LandingExperience.tsx` | Main component, waitlist state management                  |
+| `components/landing/LandingHero.tsx`       | Hero content and CTA buttons                               |
+| `components/landing/WaitlistModal.tsx`     | Waitlist modal component                                   |
+| `components/landing/landingConfig.ts`      | Sticker positions/sizes and config constants               |
+| `hooks/useDraggableLanding.ts`             | Desktop drag-and-drop behavior                             |
+| `app/api/waitlist/route.ts`                | Waitlist API endpoint                                      |
 
 ## Deployment
 
