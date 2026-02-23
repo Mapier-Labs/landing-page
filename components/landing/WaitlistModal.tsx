@@ -14,16 +14,25 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
   const [errorMsg, setErrorMsg] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
 
+  // Reset form when modal closes - deferred to avoid cascading renders
+  const resetForm = () => {
+    setName("");
+    setEmail("");
+    setStatus("idle");
+    setErrorMsg("");
+  };
+
   useEffect(() => {
     if (open) {
-      nameRef.current?.focus();
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        nameRef.current?.focus();
+      }, 0);
+      return () => clearTimeout(timer);
     }
-    if (!open) {
-      setName("");
-      setEmail("");
-      setStatus("idle");
-      setErrorMsg("");
-    }
+    // Defer reset to next tick to avoid synchronous setState in effect
+    const timer = setTimeout(resetForm, 0);
+    return () => clearTimeout(timer);
   }, [open]);
 
   useEffect(() => {
