@@ -133,13 +133,14 @@ body.is-releasing {
 }
 
 .draggable--desc p {
-  font-size: clamp(13px, 1.2vw, 15px);
+  font-size: clamp(18px, 1.6vw, 22px);
   color: #999;
   font-weight: 400;
   letter-spacing: 0.04em;
   line-height: 1.6;
-  width: clamp(280px, 30vw, 400px);
+  width: clamp(320px, 34vw, 480px);
   pointer-events: none;
+  text-wrap: balance;
 }
 
 .draggable--icon {
@@ -270,10 +271,16 @@ body.is-releasing {
     cursor: default !important;
     transition: none !important;
     will-change: auto !important;
+    pointer-events: none !important;
   }
 
   .draggable:hover {
     filter: drop-shadow(0px 2px 5px rgba(0, 0, 0, 0.1)) !important;
+  }
+
+  /* Re-enable pointer events on buttons so links still work */
+  .draggable--btn {
+    pointer-events: auto !important;
   }
 
   .reset-btn {
@@ -284,163 +291,169 @@ body.is-releasing {
     display: none;
   }
 
+  /* Hide phone sticker on mobile */
+  .draggable--phone {
+    display: none !important;
+  }
+
+  /* Vertically centered layout — anchor everything off 50% */
   .draggable--icon {
     left: 50% !important;
-    top: 22% !important;
-    width: 52px !important;
-    height: 52px !important;
-    margin-left: -26px;
-    border-radius: 14px;
+    top: calc(50% - 160px) !important;
+    width: 60px !important;
+    height: 60px !important;
+    margin-left: -30px;
+    border-radius: 16px;
     z-index: 22 !important;
   }
 
   .draggable--icon img {
-    border-radius: 14px;
+    border-radius: 16px;
   }
 
   .draggable--title {
     left: 50% !important;
-    top: 32% !important;
+    top: calc(50% - 88px) !important;
     transform: translateX(-50%) !important;
     z-index: 21 !important;
   }
 
   .draggable--title h1 {
-    font-size: 42px;
+    font-size: 56px;
   }
 
   .draggable--desc {
     left: 50% !important;
-    top: 44% !important;
+    top: calc(50% - 15px) !important;
     transform: translateX(-50%) !important;
     z-index: 20 !important;
   }
 
   .draggable--desc p {
-    font-size: 13px;
-    width: 280px;
+    font-size: 18px;
+    width: 300px;
     text-align: center;
+    line-height: 1.5;
+    text-wrap: balance;
   }
 
-  .draggable--btn:first-of-type {
+  /* Buttons stacked vertically, same width, centered */
+  .draggable--btn {
     left: 50% !important;
-    top: 58% !important;
-    transform: translateX(calc(-100% - 6px)) !important;
+    top: calc(50% + 70px) !important;
+    transform: translateX(-50%) !important;
     z-index: 20 !important;
   }
 
-  .draggable--btn:last-of-type {
-    left: 50% !important;
-    top: 58% !important;
-    transform: translateX(6px) !important;
+  .draggable--btn + .draggable--btn {
+    top: calc(50% + 130px) !important;
     z-index: 19 !important;
   }
 
   .btn {
-    font-size: 14px;
-    padding: 12px 16px;
+    font-size: 16px;
+    padding: 14px 20px;
+    min-width: 200px;
+    text-align: center;
+    justify-content: center;
   }
 
-  .draggable--phone {
-    left: auto !important;
-    right: -40px !important;
-    top: auto !important;
-    bottom: -30px !important;
-    width: 200px !important;
-    z-index: 17 !important;
-    transform: rotate(6deg) !important;
+  /* Background — zoom in slightly to crop attribution text */
+  .bg {
+    transform: scale(1.1);
+    transform-origin: center center;
   }
 
-  .draggable[style*="Frame 3185590"] {
-    width: 90px !important;
-    left: -3% !important;
+  /* Decorative stickers — scattered around periphery */
+  .draggable:has(img[src*="Frame 3185590"]) {
+    width: 100px !important;
+    left: -2% !important;
+    right: auto !important;
     top: -2% !important;
   }
 
-  .draggable[style*="Frame 3185629"] {
-    width: 50px !important;
+  .draggable:has(img[src*="Frame 3185629"]) {
+    width: 70px !important;
     left: 2% !important;
-    top: 50% !important;
+    right: auto !important;
+    top: 10% !important;
   }
 
-  .draggable[style*="Group 210"] {
-    width: 80px !important;
-    left: 80% !important;
+  .draggable:has(img[src*="Group 210"]) {
+    width: 90px !important;
+    left: auto !important;
+    right: -2% !important;
     top: -2% !important;
   }
 
-  .draggable[style*="Group 2619"] {
+  /* Hide 2619 and 2620 on mobile */
+  .draggable:has(img[src*="Group 2619"]) {
+    display: none !important;
+  }
+
+  .draggable:has(img[src*="Group 2620"]) {
+    display: none !important;
+  }
+
+  .draggable:has(img[src*="Group 2627"]) {
+    width: 100px !important;
+    left: -4% !important;
+    right: auto !important;
+    top: 84% !important;
+  }
+
+  .draggable:has(img[src*="Group 2628"]) {
     width: 55px !important;
-    left: -3% !important;
-    top: 78% !important;
-  }
-
-  .draggable[style*="Group 2620"] {
-    width: 55px !important;
-    left: 85% !important;
-    top: 55% !important;
-  }
-
-  .draggable[style*="Group 2627"] {
-    width: 80px !important;
-    left: 20% !important;
-    top: 80% !important;
-  }
-
-  .draggable[style*="Group 2628"] {
-    width: 75px !important;
-    left: 42% !important;
+    left: 35% !important;
+    right: auto !important;
     top: 82% !important;
   }
 
-  .draggable[style*="Group 2626"] {
-    width: 85px !important;
-    left: 70% !important;
-    top: 75% !important;
+  .draggable:has(img[src*="Group 2626"]) {
+    width: 110px !important;
+    left: auto !important;
+    right: -4% !important;
+    top: 82% !important;
   }
 }
 
 @media (max-width: 390px) {
-  .draggable--title h1 {
-    font-size: 36px;
-  }
-
   .draggable--icon {
-    width: 44px !important;
-    height: 44px !important;
-    margin-left: -22px;
-    top: 20% !important;
+    width: 52px !important;
+    height: 52px !important;
+    margin-left: -26px;
+    top: calc(50% - 150px) !important;
   }
 
   .draggable--title {
-    top: 29% !important;
+    top: calc(50% - 86px) !important;
+  }
+
+  .draggable--title h1 {
+    font-size: 48px;
   }
 
   .draggable--desc {
-    top: 41% !important;
+    top: calc(50% - 18px) !important;
   }
 
   .draggable--desc p {
-    width: 240px;
-    font-size: 12px;
+    width: 260px;
+    font-size: 16px;
   }
 
-  .draggable--btn:first-of-type {
-    top: 54% !important;
+  .draggable--btn {
+    top: calc(50% + 60px) !important;
   }
 
-  .draggable--btn:last-of-type {
-    top: 54% !important;
+  .draggable--btn + .draggable--btn {
+    top: calc(50% + 115px) !important;
   }
 
   .btn {
-    font-size: 13px;
-    padding: 11px 14px;
-  }
-
-  .draggable--phone {
-    width: 170px !important;
-    right: -50px !important;
+    font-size: 15px;
+    padding: 12px 18px;
+    min-width: 180px;
   }
 }
 
@@ -528,4 +541,122 @@ body.is-releasing {
   width: 20px;
   height: 20px;
   stroke: #fff;
+}
+
+/* Waitlist modal */
+.waitlist-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.waitlist-card {
+  position: relative;
+  background: #fff;
+  border-radius: 40px;
+  padding: 24px 24px;
+  width: min(360px, calc(100vw - 24px));
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.waitlist-card__x {
+  position: absolute;
+  top: 20px;
+  right: 28px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .waitlist-card {
+    width: calc(100vw - 32px);
+  }
+}
+
+.waitlist-card__title {
+  font-family: "Hornbill", Georgia, serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.waitlist-card__subtitle {
+  font-size: 14px;
+  color: #888;
+}
+
+.waitlist-card__form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.waitlist-card__inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.waitlist-card__input {
+  width: 100%;
+  padding: 12px 20px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 220px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fff;
+  color: #1a1a1a;
+}
+
+.waitlist-card__input:focus {
+  border-color: #4488ff;
+}
+
+.waitlist-card__error {
+  font-size: 13px;
+  color: #e44;
+}
+
+.waitlist-card__submit,
+.waitlist-card__done {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 220px;
+  background: #4488ff;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.waitlist-card__submit:hover,
+.waitlist-card__done:hover {
+  background: #3377ee;
+}
+
+.waitlist-card__submit:disabled {
+  opacity: 0.6;
+  cursor: default;
 }

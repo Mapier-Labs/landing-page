@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Draggable } from "./Draggable";
 import { LINKEDIN_URL } from "./landingConfig";
 
@@ -21,7 +22,7 @@ export function LandingHero() {
           transform: "rotate(2deg)",
         }}
       >
-        <img id="app-icon-img" src={PLACEHOLDER_IMG} alt="Mapier" draggable={false} />
+        <Image id="app-icon-img" src={PLACEHOLDER_IMG} alt="Mapier" draggable={false} width={88} height={88} unoptimized />
       </Draggable>
 
       <Draggable
@@ -48,10 +49,7 @@ export function LandingHero() {
         }}
       >
         <h2 className="sr-only">AI-Powered Smart Navigation</h2>
-        <p>
-          Reimagine how you explore, create, and share maps — where artificial intelligence meets
-          the art of cartography.
-        </p>
+        <p>Unlock the hidden layer in your city.</p>
       </Draggable>
 
       <Draggable
