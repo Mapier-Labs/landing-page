@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, type CSSProperties } from "react";
+import Image from "next/image";
 import { useDraggableLanding } from "@/hooks/useDraggableLanding";
 import { Draggable } from "./Draggable";
 import { LandingHero } from "./LandingHero";
@@ -71,12 +72,12 @@ export function LandingExperience() {
           transform: "rotate(3deg)",
         }}
       >
-        <img src="/landing/stickers/phone.png" alt="Mapier App" draggable={false} />
+        <Image src="/landing/stickers/phone.png" alt="Mapier App" draggable={false} width={260} height={520} style={{ width: '100%', height: 'auto' }} />
       </Draggable>
 
       {STICKERS.map((sticker, i) => (
         <Draggable key={i} initRotate={sticker.initRotate} style={sticker.style as CSSProperties}>
-          <img src={sticker.src} alt="" draggable={false} />
+          <Image src={sticker.src} alt="" draggable={false} width={200} height={200} style={{ width: '100%', height: 'auto' }} />
         </Draggable>
       ))}
 

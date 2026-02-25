@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Draggable } from "./Draggable";
 import { LINKEDIN_URL } from "./landingConfig";
 
@@ -21,7 +22,7 @@ export function LandingHero() {
           transform: "rotate(2deg)",
         }}
       >
-        <img id="app-icon-img" src={PLACEHOLDER_IMG} alt="Mapier" draggable={false} />
+        <Image id="app-icon-img" src={PLACEHOLDER_IMG} alt="Mapier" draggable={false} width={88} height={88} unoptimized />
       </Draggable>
 
       <Draggable
