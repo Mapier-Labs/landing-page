@@ -1,11 +1,23 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback, type CSSProperties } from "react";
 import { useDraggableLanding } from "@/hooks/useDraggableLanding";
 import { Draggable } from "./Draggable";
 import { LandingHero } from "./LandingHero";
 import { WaitlistModal } from "./WaitlistModal";
 import { STICKERS } from "./landingConfig";
+
+const STICKER_DIMENSIONS: Record<string, { width: number; height: number }> = {
+  "/landing/stickers/Frame 3185590.png": { width: 240, height: 201 },
+  "/landing/stickers/Frame 3185629.png": { width: 284, height: 396 },
+  "/landing/stickers/Group 210.png": { width: 310, height: 348 },
+  "/landing/stickers/Group 2619.png": { width: 119, height: 145 },
+  "/landing/stickers/Group 2620.png": { width: 95, height: 132 },
+  "/landing/stickers/Group 2627.png": { width: 237, height: 291 },
+  "/landing/stickers/Group 2628.png": { width: 101, height: 113 },
+  "/landing/stickers/Group 2626.png": { width: 411, height: 501 },
+};
 
 export function LandingExperience() {
   useDraggableLanding();
@@ -71,14 +83,32 @@ export function LandingExperience() {
           transform: "rotate(3deg)",
         }}
       >
-        <img src="/landing/stickers/phone.png" alt="Mapier App" draggable={false} />
+        <Image
+          src="/landing/stickers/phone.png"
+          alt="Mapier App"
+          width={924}
+          height={1868}
+          draggable={false}
+          unoptimized
+        />
       </Draggable>
 
-      {STICKERS.map((sticker, i) => (
-        <Draggable key={i} initRotate={sticker.initRotate} style={sticker.style as CSSProperties}>
-          <img src={sticker.src} alt="" draggable={false} />
-        </Draggable>
-      ))}
+      {STICKERS.map((sticker, i) => {
+        const size = STICKER_DIMENSIONS[sticker.src];
+
+        return (
+          <Draggable key={i} initRotate={sticker.initRotate} style={sticker.style as CSSProperties}>
+            <Image
+              src={sticker.src}
+              alt=""
+              width={size.width}
+              height={size.height}
+              draggable={false}
+              unoptimized
+            />
+          </Draggable>
+        );
+      })}
 
       <footer className="footer-bar">
         <span>© {new Date().getFullYear()} Mapier. All rights reserved.</span>
