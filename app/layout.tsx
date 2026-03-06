@@ -9,31 +9,32 @@ const nunito = Nunito({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://mapier.ai"),
-  title: "Mapier - AI-Powered Navigation App",
+  title: "Mapier - Live Map of Social & Local Life",
   description:
-    "Mapier leverages advanced Large Language Model technology to understand complex user intents and deliver personalized, intelligent navigation experiences. Features include AI understanding, personalized recommendations, POI search, user uploads, and voice control.",
+    "Mapier is the AI personalized live map of social and local life. Discover what's happening around you, meet people you vibe with, explore local businesses, and leave creative doodles across the city.",
   applicationName: "Mapier",
-  category: "navigation",
+  category: "social",
   keywords: [
-    "AI navigation",
-    "intelligent navigation",
-    "map navigation",
-    "LLM navigation",
-    "voice navigation",
-    "personalized navigation",
-    "AI map app",
-    "smart navigation",
-    "LLM map",
-    "AI route planner",
-    "intelligent directions",
+    "live social map",
+    "local discovery app",
+    "meet people nearby",
+    "AI social app",
+    "neighborhood events",
+    "spontaneous meetups",
+    "local businesses",
+    "geo-location social",
+    "city live feed",
+    "doodle posts",
+    "social map app",
   ],
   robots: { index: true, follow: true },
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Mapier - AI-Powered Navigation App",
-    description: "Let AI Understand Your Every Navigation Need",
+    title: "Mapier - Live Map of Social & Local Life",
+    description:
+      "Explore what's happening around you, meet people you vibe with, and make the city pop with creative doodles.",
     type: "website",
     url: "/",
     siteName: "Mapier",
@@ -41,8 +42,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mapier - AI-Powered Navigation App",
-    description: "Let AI Understand Your Every Navigation Need",
+    title: "Mapier - Live Map of Social & Local Life",
+    description:
+      "Explore what's happening around you, meet people you vibe with, and make the city pop with creative doodles.",
   },
   other: {
     "google-site-verification": "PLACEHOLDER",
@@ -59,7 +61,7 @@ const jsonLd = {
       logo: "https://mapier.ai/icon.png",
       sameAs: ["https://www.linkedin.com/company/mapier-labs/"],
       description:
-        "AI-powered navigation app that leverages Large Language Model technology for intelligent, personalized navigation experiences.",
+        "Mapier is the AI personalized live map of social and local life. A geo-location social app to discover what's happening around you and connect with people you vibe with.",
     },
     {
       "@type": "WebSite",
@@ -69,10 +71,10 @@ const jsonLd = {
     {
       "@type": "SoftwareApplication",
       name: "Mapier",
-      applicationCategory: "NavigationApplication",
+      applicationCategory: "SocialNetworkingApplication",
       operatingSystem: "iOS, Android",
       description:
-        "AI-powered navigation app that understands complex user intents and delivers personalized, intelligent navigation experiences.",
+        "AI personalized live map to explore your city, meet people nearby, discover local businesses, and leave creative doodles across the neighborhood.",
       offers: {
         "@type": "Offer",
         price: "0",
