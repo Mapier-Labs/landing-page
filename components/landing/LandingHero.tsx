@@ -22,7 +22,15 @@ export function LandingHero() {
           transform: "rotate(2deg)",
         }}
       >
-        <Image id="app-icon-img" src={PLACEHOLDER_IMG} alt="Mapier" draggable={false} width={88} height={88} unoptimized />
+        <Image
+          id="app-icon-img"
+          src={PLACEHOLDER_IMG}
+          alt="Mapier"
+          draggable={false}
+          width={88}
+          height={88}
+          unoptimized
+        />
       </Draggable>
 
       <Draggable
@@ -57,7 +65,7 @@ export function LandingHero() {
         initRotate={0}
         style={{
           left: "14%",
-          top: "64%",
+          top: "58%",
           zIndex: 20,
           transform: "rotate(0deg)",
         }}
@@ -67,7 +75,7 @@ export function LandingHero() {
           className="btn btn--cta btn--link"
           aria-label="Join the Mapier waitlist"
         >
-          Join the Waitlist
+          Join waitlist
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -85,8 +93,8 @@ export function LandingHero() {
         className="draggable--btn"
         initRotate={0}
         style={{
-          left: "calc(14% + 210px)",
-          top: "64%",
+          left: "calc(14% + 170px)",
+          top: "58%",
           zIndex: 19,
           transform: "rotate(0deg)",
         }}
@@ -97,7 +105,7 @@ export function LandingHero() {
           rel="noopener noreferrer"
           className="btn btn--secondary btn--link"
         >
-          Work With Us
+          Work with us
         </a>
       </Draggable>
     </>

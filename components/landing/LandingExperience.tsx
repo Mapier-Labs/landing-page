@@ -72,12 +72,26 @@ export function LandingExperience() {
           transform: "rotate(3deg)",
         }}
       >
-        <Image src="/landing/stickers/phone.png" alt="Mapier App" draggable={false} width={260} height={520} style={{ width: '100%', height: 'auto' }} />
+        <Image
+          src="/landing/stickers/phone.png"
+          alt="Mapier App"
+          draggable={false}
+          width={260}
+          height={520}
+          style={{ width: "100%", height: "auto" }}
+        />
       </Draggable>
 
       {STICKERS.map((sticker, i) => (
         <Draggable key={i} initRotate={sticker.initRotate} style={sticker.style as CSSProperties}>
-          <Image src={sticker.src} alt="" draggable={false} width={200} height={200} style={{ width: '100%', height: 'auto' }} />
+          <Image
+            src={sticker.src}
+            alt=""
+            draggable={false}
+            width={200}
+            height={200}
+            style={{ width: "100%", height: "auto" }}
+          />
         </Draggable>
       ))}
 

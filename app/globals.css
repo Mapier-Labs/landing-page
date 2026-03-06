@@ -1,5 +1,36 @@
 @import "tailwindcss";
 
+:root {
+  /* Brand */
+  --color-primary: #4488ff;
+  --color-primary-hover: #3377ee;
+  --color-primary-accent: rgba(68, 136, 255, 0.35);
+  --color-primary-shadow: rgba(68, 136, 255, 0.3);
+
+  /* Text */
+  --color-text: #1a1a1a;
+  --color-text-muted: #888;
+  --color-text-light: #999;
+  --color-text-icon: #555;
+
+  /* Surfaces */
+  --color-bg: #fff;
+  --color-border: #e0e0e0;
+  --color-error: #e44;
+
+  /* Buttons */
+  --color-btn-primary-bg: var(--color-text);
+  --color-btn-primary-text: var(--color-bg);
+  --color-btn-secondary-bg: var(--color-bg);
+  --color-btn-secondary-text: var(--color-text);
+
+  /* Overlay / Glass */
+  --color-overlay: rgba(0, 0, 0, 0.4);
+  --color-glass: rgba(255, 255, 255, 0.75);
+  --color-glass-hover: rgba(255, 255, 255, 0.92);
+  --color-glass-panel: rgba(255, 255, 255, 0.8);
+}
+
 @font-face {
   font-family: "Hornbill";
   src: url("/landing/fonts/HornbillTrial-Bold.ttf") format("truetype");
@@ -13,15 +44,7 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "SF Pro Display",
-    "SF Pro Text",
-    "Helvetica Neue",
-    "Segoe UI",
-    sans-serif;
+  font-weight: 700;
   -webkit-font-smoothing: antialiased;
   cursor:
     url("/cursors/normal.png") 12 4,
@@ -52,7 +75,7 @@ body.is-dragging {
   height: 40px;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.75);
+  background: var(--color-glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
@@ -68,7 +91,7 @@ body.is-dragging {
 }
 
 .reset-btn:hover {
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--color-glass-hover);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 }
 
@@ -79,7 +102,7 @@ body.is-dragging {
 .reset-btn svg {
   width: 18px;
   height: 18px;
-  color: #555;
+  color: var(--color-text-icon);
   transition: transform 0.15s ease;
 }
 
@@ -134,9 +157,9 @@ body.is-releasing {
 
 .draggable--desc p {
   font-size: clamp(18px, 1.6vw, 22px);
-  color: #999;
-  font-weight: 400;
-  letter-spacing: 0.04em;
+  color: var(--color-text);
+  font-weight: 700;
+  letter-spacing: normal;
   line-height: 1.6;
   width: clamp(320px, 34vw, 480px);
   pointer-events: none;
@@ -159,7 +182,7 @@ body.is-releasing {
   font-family: "Hornbill", Georgia, "Times New Roman", serif;
   font-size: clamp(52px, 8vw, 100px);
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--color-text);
   line-height: 1;
   letter-spacing: -0.02em;
   white-space: nowrap;
@@ -212,17 +235,17 @@ body.is-releasing {
 }
 
 .btn--cta {
-  background: #4488ff;
-  color: #fff;
+  background: var(--color-btn-primary-bg);
+  color: var(--color-btn-primary-text);
 }
 
 .btn--cta svg {
-  stroke: #fff;
+  stroke: var(--color-btn-primary-text);
 }
 
 .btn--secondary {
-  background: #fff;
-  color: #4488ff;
+  background: var(--color-btn-secondary-bg);
+  color: var(--color-btn-secondary-text);
 }
 
 .btn--link {
@@ -237,7 +260,7 @@ body.is-releasing {
   position: fixed;
   height: 2.5px;
   border-radius: 2px;
-  background: rgba(68, 136, 255, 0.35);
+  background: var(--color-primary-accent);
   pointer-events: none;
   z-index: 9998;
   transform-origin: 0% 50%;
@@ -253,8 +276,8 @@ body.is-releasing {
   align-items: center;
   justify-content: space-between;
   padding: 10px 24px;
-  font-size: 12px;
-  color: #888;
+  font-size: 16px;
+  color: var(--color-text);
   pointer-events: none;
 }
 
@@ -264,7 +287,7 @@ body.is-releasing {
     gap: 2px;
     text-align: center;
     padding: 8px 16px;
-    font-size: 11px;
+    font-size: 14px;
   }
 
   .draggable {
@@ -484,7 +507,7 @@ body.is-releasing {
   align-items: center;
   gap: 16px;
   padding: 48px 40px;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--color-glass-panel);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 24px;
@@ -495,14 +518,14 @@ body.is-releasing {
   font-family: "Hornbill", Georgia, "Times New Roman", serif;
   font-size: clamp(72px, 12vw, 120px);
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--color-text);
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 .not-found__desc {
   font-size: clamp(14px, 1.4vw, 18px);
-  color: #888;
+  color: var(--color-text-muted);
   font-weight: 400;
   letter-spacing: 0.02em;
 }
@@ -515,8 +538,8 @@ body.is-releasing {
   padding: 14px 24px;
   font-size: 16px;
   font-weight: 590;
-  color: #fff;
-  background: #4488ff;
+  color: var(--color-bg);
+  background: var(--color-primary);
   border: none;
   border-radius: 220px;
   text-decoration: none;
@@ -530,7 +553,7 @@ body.is-releasing {
 
 .not-found__btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(68, 136, 255, 0.3);
+  box-shadow: 0 4px 16px var(--color-primary-shadow);
 }
 
 .not-found__btn:active {
@@ -540,7 +563,7 @@ body.is-releasing {
 .not-found__btn svg {
   width: 20px;
   height: 20px;
-  stroke: #fff;
+  stroke: var(--color-bg);
 }
 
 /* Waitlist modal */
@@ -551,14 +574,14 @@ body.is-releasing {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--color-overlay);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
 
 .waitlist-card {
   position: relative;
-  background: #fff;
+  background: var(--color-bg);
   border-radius: 40px;
   padding: 24px 24px;
   width: min(360px, calc(100vw - 24px));
@@ -595,12 +618,12 @@ body.is-releasing {
   font-family: "Hornbill", Georgia, serif;
   font-size: 24px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--color-text);
 }
 
 .waitlist-card__subtitle {
   font-size: 14px;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .waitlist-card__form {
@@ -619,22 +642,22 @@ body.is-releasing {
 .waitlist-card__input {
   width: 100%;
   padding: 12px 20px;
-  border: 1.5px solid #e0e0e0;
+  border: 1.5px solid var(--color-border);
   border-radius: 220px;
   font-size: 15px;
   outline: none;
   transition: border-color 0.2s;
-  background: #fff;
-  color: #1a1a1a;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .waitlist-card__input:focus {
-  border-color: #4488ff;
+  border-color: var(--color-text);
 }
 
 .waitlist-card__error {
   font-size: 13px;
-  color: #e44;
+  color: var(--color-error);
 }
 
 .waitlist-card__submit,
@@ -643,8 +666,8 @@ body.is-releasing {
   padding: 14px;
   border: none;
   border-radius: 220px;
-  background: #4488ff;
-  color: #fff;
+  background: var(--color-btn-primary-bg);
+  color: var(--color-btn-primary-text);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -653,7 +676,7 @@ body.is-releasing {
 
 .waitlist-card__submit:hover,
 .waitlist-card__done:hover {
-  background: #3377ee;
+  background: #333;
 }
 
 .waitlist-card__submit:disabled {
