@@ -1,7 +1,5 @@
 export const ICON_VARIANTS = [
   "/landing/app icon/Property 1=Default.png",
-  "/landing/app icon/Property 1=Variant2.png",
-  "/landing/app icon/Property 1=Variant3.png",
 ] as const;
 
 export const STICKERS = [
