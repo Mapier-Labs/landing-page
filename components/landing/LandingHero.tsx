@@ -83,7 +83,7 @@ export function LandingHero() {
         className="draggable--btn"
         initRotate={0}
         style={{
-          left: "calc(14% + 170px)",
+          left: "calc(14% + 200px)",
           top: "58%",
           zIndex: 19,
           transform: "rotate(0deg)",
