@@ -164,6 +164,8 @@ body.is-releasing {
   width: clamp(320px, 34vw, 480px);
   pointer-events: none;
   text-wrap: balance;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 4px var(--color-bg);
 }
 
 .draggable--icon {
@@ -187,6 +189,8 @@ body.is-releasing {
   letter-spacing: -0.02em;
   white-space: nowrap;
   pointer-events: none;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 12px var(--color-bg);
 }
 
 .draggable--phone {
@@ -219,11 +223,12 @@ body.is-releasing {
   justify-content: center;
   gap: 8px;
   font-size: 16px;
-  font-weight: 590;
+  font-weight: 700;
   border: none;
   border-radius: 220px;
   cursor: inherit;
-  padding: 14px 18px;
+  padding: 14px 10px;
+  min-width: 180px;
   white-space: nowrap;
   pointer-events: none;
 }
