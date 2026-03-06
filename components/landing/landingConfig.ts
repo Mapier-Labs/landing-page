@@ -1,6 +1,4 @@
-export const ICON_VARIANTS = [
-  "/landing/app icon/Property 1=Default.png",
-] as const;
+export const ICON_VARIANTS = ["/landing/app icon/Property 1=Default.png"] as const;
 
 export const STICKERS = [
   {

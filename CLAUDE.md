@@ -38,6 +38,7 @@ Single endpoint: `POST /api/waitlist` — validates email/name, currently logs t
 Tailwind CSS v4 via PostCSS. Global styles and CSS custom properties defined in `app/globals.css`.
 
 **Design System** — CSS custom properties in `:root` of `globals.css`:
+
 - **Brand**: `--color-primary`, `--color-primary-hover`, `--color-primary-accent`, `--color-primary-shadow`
 - **Text**: `--color-text` (#1a1a1a), `--color-text-muted`, `--color-text-light`, `--color-text-icon`
 - **Surfaces**: `--color-bg` (#fff), `--color-border`, `--color-error`
@@ -45,6 +46,7 @@ Tailwind CSS v4 via PostCSS. Global styles and CSS custom properties defined in 
 - **Glass**: `--color-overlay`, `--color-glass`, `--color-glass-hover`, `--color-glass-panel`
 
 **Typography**:
+
 - Display font: **Hornbill** (custom `.ttf`) — Mapier branding and titles only
 - Body font: **Nunito** (Google Fonts via `next/font`) — everything else
 - Global bold (`font-weight: 700`) on `html, body`
