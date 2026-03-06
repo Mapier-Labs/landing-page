@@ -246,8 +246,9 @@ export function useDraggableLanding() {
       for (let i = 0; i < count; i += 1) {
         const angle = angleStep * i + (Math.random() - 0.5) * angleStep * 0.6;
         const rad = (angle * Math.PI) / 180;
-        const dist = radius + 6 + Math.random() * 8;
-        const len = 11 + Math.random() * 15;
+        const scale = Math.min(radius / 50, 1.5);
+        const dist = radius + 4 * scale + Math.random() * 6 * scale;
+        const len = (8 + Math.random() * 8) * scale;
 
         const line = document.createElement("div");
         line.className = "burst-line";

@@ -263,9 +263,9 @@ body.is-releasing {
 
 .burst-line {
   position: fixed;
-  height: 2.5px;
-  border-radius: 2px;
-  background: var(--color-primary-accent);
+  height: 7px;
+  border-radius: 3.5px;
+  background: var(--color-text);
   pointer-events: none;
   z-index: 9998;
   transform-origin: 0% 50%;

@@ -16,7 +16,7 @@ Package manager is **Yarn 4** (managed via Corepack). Run `corepack enable` if Y
 
 ## Architecture
 
-**Next.js 16 App Router** landing page for Mapier (an AI-powered navigation app) with React 19 and TypeScript.
+**Next.js 16.1 App Router** landing page for Mapier (an AI-powered navigation app) with React 19 and TypeScript.
 
 ### Project Layout
 
@@ -26,8 +26,8 @@ Package manager is **Yarn 4** (managed via Corepack). Run `corepack enable` if Y
 
 ### Page Composition
 
-The home page (`app/page.tsx`) renders components in this order:
-Header → HeroSection → BusinessDescription → FeaturesSection → ProductDetails → DataVisualization → StatusSection → TeamSection → WaitlistForm → Footer
+The home page (`app/page.tsx`) renders a draggable interactive hero experience:
+LandingExperience → LandingHero (icon, title, description, CTA buttons) + WaitlistModal + Draggable stickers
 
 ### API Routes
 
@@ -35,12 +35,25 @@ Single endpoint: `POST /api/waitlist` — validates email/name, currently logs t
 
 ### Styling
 
-Tailwind CSS v4 via PostCSS. Global styles and CSS custom properties defined in `app/globals.css`. Color palette centers on blue/purple gradients. Responsive breakpoints use standard Tailwind `sm:`/`md:`/`lg:` prefixes.
+Tailwind CSS v4 via PostCSS. Global styles and CSS custom properties defined in `app/globals.css`.
+
+**Design System** — CSS custom properties in `:root` of `globals.css`:
+- **Brand**: `--color-primary`, `--color-primary-hover`, `--color-primary-accent`, `--color-primary-shadow`
+- **Text**: `--color-text` (#1a1a1a), `--color-text-muted`, `--color-text-light`, `--color-text-icon`
+- **Surfaces**: `--color-bg` (#fff), `--color-border`, `--color-error`
+- **Buttons**: `--color-btn-primary-bg/text`, `--color-btn-secondary-bg/text` (black & white theme)
+- **Glass**: `--color-overlay`, `--color-glass`, `--color-glass-hover`, `--color-glass-panel`
+
+**Typography**:
+- Display font: **Hornbill** (custom `.ttf`) — Mapier branding and titles only
+- Body font: **Nunito** (Google Fonts via `next/font`) — everything else
+- Global bold (`font-weight: 700`) on `html, body`
+
+**Visual style**: Black & white UI theme. Sticker-style text with white text-stroke on titles. Responsive breakpoints at `768px` and `390px`.
 
 ### Key Libraries
 
-- **Recharts** — Data visualization charts in `DataVisualization.tsx`
-- **Lucide React** — Icon library used across all components
+- **Lucide React** — Icon library used across components
 
 ### Path Alias
 

@@ -31,7 +31,7 @@ To preview on a mobile device, connect to the same WiFi and use the Network URL 
 
 ## Architecture
 
-**Next.js 16 App Router** with React 19, TypeScript, and Tailwind CSS v4.
+**Next.js 16.1 App Router** with React 19, TypeScript, and Tailwind CSS v4.
 
 ### Page Composition
 
@@ -39,12 +39,12 @@ The landing page (`app/page.tsx`) renders a draggable interactive hero experienc
 
 - **LandingExperience** — main orchestrator, manages draggable stickers and waitlist modal state
 - **LandingHero** — icon, title, description, and CTA buttons
-- **WaitlistModal** — modal overlay triggered by "Join the Waitlist" button
+- **WaitlistModal** — modal overlay triggered by "Join waitlist" button
 - **Draggable** — generic wrapper for drag-and-drop elements (desktop only)
 
 ### Waitlist Flow
 
-1. User clicks "Join the Waitlist" button
+1. User clicks "Join waitlist" button
 2. Modal opens with Name + Email form
 3. Form submits to `POST /api/waitlist`
 4. Success/error states displayed in modal
@@ -68,7 +68,7 @@ The landing page (`app/page.tsx`) renders a draggable interactive hero experienc
 
 | File                                       | Purpose                                                    |
 | ------------------------------------------ | ---------------------------------------------------------- |
-| `app/globals.css`                          | All styles including mobile breakpoints and waitlist modal |
+| `app/globals.css`                          | All styles, CSS custom properties (design tokens), mobile breakpoints |
 | `components/landing/LandingExperience.tsx` | Main component, waitlist state management                  |
 | `components/landing/LandingHero.tsx`       | Hero content and CTA buttons                               |
 | `components/landing/WaitlistModal.tsx`     | Waitlist modal component                                   |
