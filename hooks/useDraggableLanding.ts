@@ -238,7 +238,7 @@ export function useDraggableLanding() {
       const rect = el.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
-      const radius = Math.max(rect.width, rect.height) * 0.48;
+      const radius = Math.max(rect.width, rect.height) * 0.48 + 8;
 
       const count = 7 + Math.floor(Math.random() * 3);
       const angleStep = 360 / count;
