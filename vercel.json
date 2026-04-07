@@ -5,10 +5,10 @@
   "framework": "nextjs",
   "regions": ["hkg1"],
   "rewrites": [
-    { "source": "/share/:path*", "destination": "https://dev.api.mapier.ai/share/:path*" },
+    { "source": "/share/:path*", "destination": "https://knxtiuihojxxrthtrtdq.supabase.co/functions/v1/api/share/:path*" },
     {
       "source": "/.well-known/:path*",
-      "destination": "https://dev.api.mapier.ai/.well-known/:path*"
+      "destination": "https://knxtiuihojxxrthtrtdq.supabase.co/functions/v1/api/.well-known/:path*"
     }
   ]
 }
