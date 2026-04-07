@@ -3,5 +3,12 @@
   "devCommand": "yarn dev",
   "installCommand": "yarn install",
   "framework": "nextjs",
-  "regions": ["hkg1"]
+  "regions": ["hkg1"],
+  "rewrites": [
+    { "source": "/share/:path*", "destination": "https://dev.api.mapier.ai/share/:path*" },
+    {
+      "source": "/.well-known/:path*",
+      "destination": "https://dev.api.mapier.ai/.well-known/:path*"
+    }
+  ]
 }
