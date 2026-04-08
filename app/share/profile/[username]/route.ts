@@ -1,38 +1,36 @@
-import { createClient } from '@supabase/supabase-js';
-import { NextResponse } from 'next/server';
+import { createClient } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? '';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? "";
 const SUPABASE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
+  process.env.SUPABASE_SERVICE_ROLE_KEY ??
+  process.env.SUPABASE_ANON_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+  "";
 
-const APP_STORE_ID = process.env.APP_STORE_ID ?? '';
-const APP_STORE_URL = APP_STORE_ID
-  ? `https://apps.apple.com/app/mapier/id${APP_STORE_ID}`
-  : '';
+const APP_STORE_ID = process.env.APP_STORE_ID ?? "";
+const APP_STORE_URL = APP_STORE_ID ? `https://apps.apple.com/app/mapier/id${APP_STORE_ID}` : "";
 
 function esc(str: string): string {
   return str
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
 
 function truncate(str: string, max: number): string {
   return str.length <= max ? str : `${str.slice(0, max - 1)}\u2026`;
 }
 
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ username: string }> },
-) {
+export async function GET(_req: Request, { params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('username, name, bio, avatar_url, post_count')
-    .eq('username', username)
+    .from("profiles")
+    .select("username, name, bio, avatar_url, post_count")
+    .eq("username", username)
     .single();
 
   const displayName = (profile?.name as string | null) ?? `@${username}`;
@@ -45,12 +43,8 @@ export async function GET(
   const avatarUrl = (profile?.avatar_url as string | null) ?? null;
   const deepLink = `mapier://profile/${username}`;
 
-  const imageTag = avatarUrl
-    ? `<meta property="og:image" content="${esc(avatarUrl)}" />`
-    : '';
-  const twitterImage = avatarUrl
-    ? `<meta name="twitter:image" content="${esc(avatarUrl)}" />`
-    : '';
+  const imageTag = avatarUrl ? `<meta property="og:image" content="${esc(avatarUrl)}" />` : "";
+  const twitterImage = avatarUrl ? `<meta name="twitter:image" content="${esc(avatarUrl)}" />` : "";
 
   const html = `<!DOCTYPE html>
 <html>
@@ -68,14 +62,14 @@ export async function GET(
   <meta name="twitter:title" content="${esc(ogTitle)}" />
   <meta name="twitter:description" content="${esc(ogDescription)}" />
   ${twitterImage}
-  ${APP_STORE_ID ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}" />` : ''}
+  ${APP_STORE_ID ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}" />` : ""}
   <script>
     window.location.replace('${deepLink}');
     setTimeout(function() {
       var ua = navigator.userAgent || '';
       if (/android/i.test(ua)) {
         window.location.replace('https://play.google.com/store/apps/details?id=ai.mapier');
-      }${APP_STORE_URL ? ` else { window.location.replace('${APP_STORE_URL}'); }` : ''}
+      }${APP_STORE_URL ? ` else { window.location.replace('${APP_STORE_URL}'); }` : ""}
     }, 500);
   </script>
   <style>
@@ -96,6 +90,6 @@ export async function GET(
 </html>`;
 
   return new NextResponse(html, {
-    headers: { 'Content-Type': 'text/html; charset=UTF-8' },
+    headers: { "Content-Type": "text/html; charset=UTF-8" },
   });
 }
