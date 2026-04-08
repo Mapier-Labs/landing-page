@@ -83,18 +83,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   ${twitterImage}
   ${APP_STORE_ID ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}" />` : ""}
   <script>
-    // Use an iframe to try opening the app without navigating away from this page.
-    // This keeps the share page visible if the app isn't installed.
-    var iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = '${deepLink}';
-    document.body.appendChild(iframe);
-    setTimeout(function() {
-      var ua = navigator.userAgent || '';
-      if (/android/i.test(ua)) {
-        window.location.href = 'https://play.google.com/store/apps/details?id=ai.mapier';
-      }${APP_STORE_URL ? ` else { window.location.href = '${APP_STORE_URL}'; }` : ""}
-    }, 1500);
+    // Try opening the app. If it works, the browser stays on this page.
+    // If it doesn't, the page content is shown with an "Open in Mapier" button.
+    setTimeout(function() { window.location.href = '${deepLink}'; }, 100);
   </script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5; color: #333; text-align: center; padding: 1rem; }
@@ -108,7 +99,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   <div class="container">
     <h1>Mapier</h1>
     <p>${esc(fallbackText)}</p>
-    ${APP_STORE_URL ? `<a href="${APP_STORE_URL}">Get the App</a>` : '<p style="margin-top:1rem;font-weight:500;">Open in Mapier</p>'}
+    <a href="${deepLink}">Open in Mapier</a>
+    ${APP_STORE_URL ? `<a href="${APP_STORE_URL}" style="background:#666;">Get the App</a>` : ""}
   </div>
 </body>
 </html>`;
