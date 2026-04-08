@@ -83,26 +83,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   ${twitterImage}
   ${APP_STORE_ID ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}" />` : ""}
   <script>
-    // Try opening the app. If it works, the browser stays on this page.
-    // If it doesn't, the page content is shown with an "Open in Mapier" button.
-    setTimeout(function() { window.location.href = '${deepLink}'; }, 100);
+    window.location.href = '${deepLink}';
   </script>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5; color: #333; text-align: center; padding: 1rem; }
-    .container { max-width: 400px; }
-    h1 { font-size: 1.25rem; margin-bottom: 0.5rem; }
-    p { color: #666; font-size: 0.95rem; }
-    a { display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: #000; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 500; }
-  </style>
 </head>
-<body>
-  <div class="container">
-    <h1>Mapier</h1>
-    <p>${esc(fallbackText)}</p>
-    <a href="${deepLink}">Open in Mapier</a>
-    ${APP_STORE_URL ? `<a href="${APP_STORE_URL}" style="background:#666;">Get the App</a>` : ""}
-  </div>
-</body>
+<body></body>
 </html>`;
 
   return new NextResponse(html, {
