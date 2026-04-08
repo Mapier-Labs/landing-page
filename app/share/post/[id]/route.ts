@@ -83,13 +83,18 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   ${twitterImage}
   ${APP_STORE_ID ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}" />` : ""}
   <script>
-    window.location.replace('${deepLink}');
+    // Use an iframe to try opening the app without navigating away from this page.
+    // This keeps the share page visible if the app isn't installed.
+    var iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = '${deepLink}';
+    document.body.appendChild(iframe);
     setTimeout(function() {
       var ua = navigator.userAgent || '';
       if (/android/i.test(ua)) {
-        window.location.replace('https://play.google.com/store/apps/details?id=ai.mapier');
-      }${APP_STORE_URL ? ` else { window.location.replace('${APP_STORE_URL}'); }` : ""}
-    }, 500);
+        window.location.href = 'https://play.google.com/store/apps/details?id=ai.mapier';
+      }${APP_STORE_URL ? ` else { window.location.href = '${APP_STORE_URL}'; }` : ""}
+    }, 1500);
   </script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5; color: #333; text-align: center; padding: 1rem; }
