@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, type CSSProperties } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useDraggableLanding } from "@/hooks/useDraggableLanding";
 import { Draggable } from "./Draggable";
 import { LandingHero } from "./LandingHero";
@@ -96,11 +97,12 @@ export function LandingExperience() {
       ))}
 
       <footer className="footer-bar">
-        <span>© {new Date().getFullYear()} Mapier Labs Inc.</span>
+        <span>© {new Date().getFullYear()} Mapier. All rights reserved.</span>
+        <span>Built by Mapier Labs with ❤️ in SF</span>
         <nav className="footer-bar__links">
-          <a href="/support">Support</a>
-          <a href="/privacy">Privacy</a>
-          <a href="/terms">Terms</a>
+          <Link href="/support">Support</Link>
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/terms">Terms</Link>
         </nav>
       </footer>
 

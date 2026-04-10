@@ -703,6 +703,8 @@ body.is-releasing {
   font-weight: 600;
   opacity: 0.7;
   transition: opacity 0.2s;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .footer-bar__links a:hover {

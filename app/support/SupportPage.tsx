@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PageLayout } from "@/components/PageLayout";
-import { Mail, MessageCircle, Shield, MapPin, User, HelpCircle } from "lucide-react";
+import { Mail, MessageCircle, Shield, HelpCircle } from "lucide-react";
 
 const FAQS = [
   {
@@ -33,18 +33,6 @@ const FAQS = [
 
 export function SupportPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [formStatus, setFormStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormStatus("sending");
-    // Simulate send — replace with real endpoint when available
-    await new Promise((r) => setTimeout(r, 800));
-    setFormStatus("sent");
-    setFormData({ name: "", email: "", subject: "", message: "" });
-  };
-
   return (
     <PageLayout>
       <section className="page-section">
@@ -119,100 +107,6 @@ export function SupportPage() {
         </div>
       </section>
 
-      <section className="page-section">
-        <h2 className="page-section-title">
-          <MessageCircle size={24} />
-          Send Us a Message
-        </h2>
-        {formStatus === "sent" ? (
-          <div className="support-form-success">
-            <p>Thank you! We&apos;ve received your message and will get back to you shortly.</p>
-            <button
-              type="button"
-              className="page-btn"
-              onClick={() => setFormStatus("idle")}
-            >
-              Send Another Message
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="support-form">
-            <div className="support-form__row">
-              <div className="support-form__field">
-                <label htmlFor="support-name">Name</label>
-                <input
-                  id="support-name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Your name"
-                />
-              </div>
-              <div className="support-form__field">
-                <label htmlFor="support-email">Email</label>
-                <input
-                  id="support-email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="you@example.com"
-                />
-              </div>
-            </div>
-            <div className="support-form__field">
-              <label htmlFor="support-subject">Subject</label>
-              <input
-                id="support-subject"
-                type="text"
-                required
-                value={formData.subject}
-                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                placeholder="How can we help?"
-              />
-            </div>
-            <div className="support-form__field">
-              <label htmlFor="support-message">Message</label>
-              <textarea
-                id="support-message"
-                required
-                rows={5}
-                value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                placeholder="Describe your issue or question..."
-              />
-            </div>
-            <button type="submit" className="page-btn" disabled={formStatus === "sending"}>
-              {formStatus === "sending" ? "Sending..." : "Send Message"}
-            </button>
-          </form>
-        )}
-      </section>
-
-      <section className="page-section page-section--highlight">
-        <h2 className="page-section-title">
-          <MapPin size={24} />
-          About Mapier
-        </h2>
-        <div className="about-cards">
-          <div className="about-card">
-            <MapPin size={32} />
-            <h3>Live Social Map</h3>
-            <p>See what&apos;s happening around you in real time — events, meetups, local buzz.</p>
-          </div>
-          <div className="about-card">
-            <User size={32} />
-            <h3>Meet Your People</h3>
-            <p>AI-powered matching connects you with people who share your interests nearby.</p>
-          </div>
-          <div className="about-card">
-            <Shield size={32} />
-            <h3>Privacy First</h3>
-            <p>Your location and data stay under your control. We never sell your information.</p>
-          </div>
-        </div>
-      </section>
     </PageLayout>
   );
 }
