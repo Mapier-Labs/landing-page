@@ -50,7 +50,11 @@ export function PageLayout({ children }: PageLayoutProps) {
             <div className="page-footer__col">
               <h4>Product</h4>
               <Link href="/#waitlist">Join Waitlist</Link>
-              <a href="https://www.linkedin.com/company/mapier-labs/" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://www.linkedin.com/company/mapier-labs/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Careers
               </a>
             </div>
