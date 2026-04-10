@@ -35,8 +35,8 @@ export function PrivacyPage() {
             within the app.
           </li>
           <li>
-            <strong>Communications:</strong> Messages you send to us via support channels or
-            in-app feedback.
+            <strong>Communications:</strong> Messages you send to us via support channels or in-app
+            feedback.
           </li>
         </ul>
 
@@ -73,7 +73,10 @@ export function PrivacyPage() {
         </ul>
 
         <h2>4. How We Share Your Information</h2>
-        <p>We do not sell your personal information. We may share information in these limited circumstances:</p>
+        <p>
+          We do not sell your personal information. We may share information in these limited
+          circumstances:
+        </p>
         <ul>
           <li>
             <strong>With Other Users:</strong> Your public profile and content you post are visible
@@ -97,8 +100,8 @@ export function PrivacyPage() {
         <p>
           We retain your personal information only for as long as necessary to fulfill the purposes
           outlined in this policy, unless a longer retention period is required by law. When you
-          delete your account, we will delete or anonymize your personal data within 30 days,
-          except where retention is required for legal compliance.
+          delete your account, we will delete or anonymize your personal data within 30 days, except
+          where retention is required for legal compliance.
         </p>
 
         <h2>6. Data Security</h2>
@@ -133,8 +136,8 @@ export function PrivacyPage() {
 
         <h2>9. International Data Transfers</h2>
         <p>
-          Your information may be transferred to and processed in countries other than your own.
-          We ensure appropriate safeguards are in place for such transfers in compliance with
+          Your information may be transferred to and processed in countries other than your own. We
+          ensure appropriate safeguards are in place for such transfers in compliance with
           applicable data protection laws.
         </p>
 
@@ -158,7 +161,11 @@ export function PrivacyPage() {
             Support: <a href="/support">mapier.ai/support</a>
           </li>
         </ul>
-        <p>Mapier Labs Inc.<br />San Francisco, CA</p>
+        <p>
+          Mapier Labs Inc.
+          <br />
+          San Francisco, CA
+        </p>
       </section>
     </PageLayout>
   );

@@ -99,14 +99,16 @@ export function SupportPage() {
           <div className="support-contact-card">
             <Shield size={28} />
             <h3>Privacy &amp; Data</h3>
-            <p>For data deletion or privacy-related requests, reach out to the same email or read our policy.</p>
+            <p>
+              For data deletion or privacy-related requests, reach out to the same email or read our
+              policy.
+            </p>
             <a href="/privacy" className="support-contact-link">
               Privacy Policy
             </a>
           </div>
         </div>
       </section>
-
     </PageLayout>
   );
 }

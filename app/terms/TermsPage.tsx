@@ -39,7 +39,9 @@ export function TermsPage() {
         <ul>
           <li>Use the Service for any unlawful purpose</li>
           <li>Harass, abuse, or harm other users</li>
-          <li>Post content that is defamatory, obscene, or infringes intellectual property rights</li>
+          <li>
+            Post content that is defamatory, obscene, or infringes intellectual property rights
+          </li>
           <li>Impersonate another person or entity</li>
           <li>Attempt to gain unauthorized access to any part of the Service</li>
           <li>Use automated means to scrape or collect data from the Service</li>
@@ -65,17 +67,17 @@ export function TermsPage() {
 
         <h2>7. Location Services</h2>
         <p>
-          Mapier uses location data to provide its core features. By enabling location services,
-          you consent to the collection and use of your location information as described in our{" "}
-          <a href="/privacy">Privacy Policy</a>. You can disable location access at any time
-          through your device settings, though this may limit the functionality of the Service.
+          Mapier uses location data to provide its core features. By enabling location services, you
+          consent to the collection and use of your location information as described in our{" "}
+          <a href="/privacy">Privacy Policy</a>. You can disable location access at any time through
+          your device settings, though this may limit the functionality of the Service.
         </p>
 
         <h2>8. Third-Party Services</h2>
         <p>
           The Service may contain links to or integrations with third-party services. We are not
-          responsible for the content, privacy practices, or terms of any third-party services.
-          Your use of third-party services is at your own risk.
+          responsible for the content, privacy practices, or terms of any third-party services. Your
+          use of third-party services is at your own risk.
         </p>
 
         <h2>9. Disclaimers</h2>
@@ -89,9 +91,9 @@ export function TermsPage() {
         <h2>10. Limitation of Liability</h2>
         <p>
           TO THE MAXIMUM EXTENT PERMITTED BY LAW, MAPIER LABS INC. SHALL NOT BE LIABLE FOR ANY
-          INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE
-          OF THE SERVICE. OUR TOTAL LIABILITY SHALL NOT EXCEED THE AMOUNT YOU PAID TO US, IF ANY,
-          IN THE TWELVE MONTHS PRECEDING THE CLAIM.
+          INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE OF
+          THE SERVICE. OUR TOTAL LIABILITY SHALL NOT EXCEED THE AMOUNT YOU PAID TO US, IF ANY, IN
+          THE TWELVE MONTHS PRECEDING THE CLAIM.
         </p>
 
         <h2>11. Indemnification</h2>
@@ -105,8 +107,8 @@ export function TermsPage() {
         <p>
           We may suspend or terminate your access to the Service at any time for any reason,
           including violation of these Terms. You may delete your account at any time through the
-          app settings or by contacting <a href="mailto:hello@mapier.ai">hello@mapier.ai</a>.
-          Upon termination, your right to use the Service ceases immediately.
+          app settings or by contacting <a href="mailto:hello@mapier.ai">hello@mapier.ai</a>. Upon
+          termination, your right to use the Service ceases immediately.
         </p>
 
         <h2>13. Changes to Terms</h2>
@@ -119,8 +121,8 @@ export function TermsPage() {
         <h2>14. Governing Law</h2>
         <p>
           These Terms are governed by the laws of the State of California, without regard to
-          conflict of law principles. Any disputes shall be resolved in the courts located in
-          San Francisco County, California.
+          conflict of law principles. Any disputes shall be resolved in the courts located in San
+          Francisco County, California.
         </p>
 
         <h2>15. Contact</h2>
@@ -133,7 +135,11 @@ export function TermsPage() {
             Support: <a href="/support">mapier.ai/support</a>
           </li>
         </ul>
-        <p>Mapier Labs Inc.<br />San Francisco, CA</p>
+        <p>
+          Mapier Labs Inc.
+          <br />
+          San Francisco, CA
+        </p>
       </section>
     </PageLayout>
   );
