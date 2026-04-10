@@ -96,8 +96,12 @@ export function LandingExperience() {
       ))}
 
       <footer className="footer-bar">
-        <span>© {new Date().getFullYear()} Mapier. All rights reserved.</span>
-        <span>Built by Mapier Labs with ❤️ in SF</span>
+        <span>© {new Date().getFullYear()} Mapier Labs Inc.</span>
+        <nav className="footer-bar__links">
+          <a href="/support">Support</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+        </nav>
       </footer>
 
       <WaitlistModal open={waitlistOpen} onClose={closeWaitlist} />
