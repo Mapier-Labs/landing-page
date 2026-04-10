@@ -105,7 +105,7 @@ export function TermsPage() {
         <p>
           We may suspend or terminate your access to the Service at any time for any reason,
           including violation of these Terms. You may delete your account at any time through the
-          app settings or by contacting <a href="mailto:support@mapier.ai">support@mapier.ai</a>.
+          app settings or by contacting <a href="mailto:hello@mapier.ai">hello@mapier.ai</a>.
           Upon termination, your right to use the Service ceases immediately.
         </p>
 
@@ -127,7 +127,7 @@ export function TermsPage() {
         <p>For questions about these Terms, please contact us:</p>
         <ul>
           <li>
-            Email: <a href="mailto:legal@mapier.ai">legal@mapier.ai</a>
+            Email: <a href="mailto:hello@mapier.ai">hello@mapier.ai</a>
           </li>
           <li>
             Support: <a href="/support">mapier.ai/support</a>

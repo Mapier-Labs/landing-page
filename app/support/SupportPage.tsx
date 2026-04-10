@@ -27,7 +27,7 @@ const FAQS = [
   },
   {
     q: "How can I delete my account or data?",
-    a: "Once the app launches, you'll be able to delete your account and all associated data directly from the app settings. You can also contact us at support@mapier.ai to request data deletion.",
+    a: "Once the app launches, you'll be able to delete your account and all associated data directly from the app settings. You can also contact us at hello@mapier.ai to request data deletion.",
   },
 ];
 
@@ -99,8 +99,8 @@ export function SupportPage() {
             <Mail size={28} />
             <h3>Email Support</h3>
             <p>For general inquiries and support requests.</p>
-            <a href="mailto:support@mapier.ai" className="support-contact-link">
-              support@mapier.ai
+            <a href="mailto:hello@mapier.ai" className="support-contact-link">
+              hello@mapier.ai
             </a>
           </div>
           <div className="support-contact-card">
@@ -110,10 +110,10 @@ export function SupportPage() {
           </div>
           <div className="support-contact-card">
             <Shield size={28} />
-            <h3>Privacy Requests</h3>
-            <p>For data deletion or privacy-related requests.</p>
-            <a href="mailto:privacy@mapier.ai" className="support-contact-link">
-              privacy@mapier.ai
+            <h3>Privacy &amp; Data</h3>
+            <p>For data deletion or privacy-related requests, reach out to the same email or read our policy.</p>
+            <a href="/privacy" className="support-contact-link">
+              Privacy Policy
             </a>
           </div>
         </div>

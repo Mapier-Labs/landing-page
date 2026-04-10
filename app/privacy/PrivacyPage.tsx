@@ -121,7 +121,7 @@ export function PrivacyPage() {
         </ul>
         <p>
           To exercise any of these rights, contact us at{" "}
-          <a href="mailto:privacy@mapier.ai">privacy@mapier.ai</a>.
+          <a href="mailto:hello@mapier.ai">hello@mapier.ai</a>.
         </p>
 
         <h2>8. Children&apos;s Privacy</h2>
@@ -152,7 +152,7 @@ export function PrivacyPage() {
         </p>
         <ul>
           <li>
-            Email: <a href="mailto:privacy@mapier.ai">privacy@mapier.ai</a>
+            Email: <a href="mailto:hello@mapier.ai">hello@mapier.ai</a>
           </li>
           <li>
             Support: <a href="/support">mapier.ai/support</a>

@@ -62,7 +62,7 @@ export function PageLayout({ children }: PageLayoutProps) {
             <div className="page-footer__col">
               <h4>Support</h4>
               <Link href="/support">Help Center</Link>
-              <a href="mailto:support@mapier.ai">support@mapier.ai</a>
+              <a href="mailto:hello@mapier.ai">hello@mapier.ai</a>
             </div>
           </div>
         </div>
