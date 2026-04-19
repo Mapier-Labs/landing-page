@@ -1096,6 +1096,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/google.maps@npm:^3.64.0":
+  version: 3.64.0
+  resolution: "@types/google.maps@npm:3.64.0"
+  checksum: 10c0/59895cade8d70d9d0b2a40b0edeea683555d117cfb4467079357eb8cc81a5e29358a6b22d4c1e3ce2618e3125ecf8853b9a108ada11a33c47f01b8db51a65d5f
+  languageName: node
+  linkType: hard
+
 "@types/json-schema@npm:^7.0.15":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
@@ -3513,6 +3520,7 @@ __metadata:
   dependencies:
     "@supabase/supabase-js": "npm:^2.97.0"
     "@tailwindcss/postcss": "npm:^4"
+    "@types/google.maps": "npm:^3.64.0"
     "@types/node": "npm:^20"
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"

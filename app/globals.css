@@ -65,6 +65,10 @@ body.is-dragging {
   background: #e6e4df;
   z-index: 0;
   pointer-events: none;
+  /* Scale up to crop Google Maps attribution at edges */
+  transform: scale(1.15);
+  transform-origin: center center;
+  overflow: hidden;
 }
 
 .reset-btn {
@@ -385,12 +389,6 @@ body.is-releasing {
     min-width: 200px;
     text-align: center;
     justify-content: center;
-  }
-
-  /* Background — zoom in slightly to crop attribution text */
-  .bg {
-    transform: scale(1.1);
-    transform-origin: center center;
   }
 
   /* Decorative stickers — scattered around periphery */
