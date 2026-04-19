@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useDraggableLanding } from "@/hooks/useDraggableLanding";
 import { Draggable } from "./Draggable";
 import { LandingHero } from "./LandingHero";
+import { MapBackground } from "./MapBackground";
 import { WaitlistModal } from "./WaitlistModal";
 import { STICKERS } from "./landingConfig";
 
@@ -44,7 +45,7 @@ export function LandingExperience() {
 
   return (
     <>
-      <div className="bg" />
+      <MapBackground />
 
       <button className="reset-btn" type="button" title="Reset layout">
         <svg

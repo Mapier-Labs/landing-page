@@ -62,8 +62,9 @@ body.is-dragging {
 .bg {
   position: fixed;
   inset: 0;
-  background: url("/landing/bg-map.png") center / cover no-repeat;
+  background: #e6e4df;
   z-index: 0;
+  pointer-events: none;
 }
 
 .reset-btn {
