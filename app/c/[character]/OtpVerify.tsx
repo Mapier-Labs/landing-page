@@ -10,15 +10,16 @@ import {
   useState,
 } from 'react';
 import { ChevronRight, Loader2 } from 'lucide-react';
-import type { Character } from '@/lib/characters';
-import { ApiError, claimCharacter, requestOtp, verifyOtp } from '@/lib/api';
+import { type Character, getCharacter } from '@/lib/characters';
+import { ApiError, claimCharacter, extractExistingClaim, requestOtp, verifyOtp } from '@/lib/api';
 import { HomeButton, PastelBackdrop, Sparkle } from './_shared';
 
 interface OtpVerifyProps {
   character: Character;
   phone: string;
   posterId?: string;
-  onClaimed: (accessToken: string) => void;
+  posterToken?: string;
+  onClaimed: (accessToken: string, claimedAs: Character) => void;
   onChangePhone: () => void;
 }
 
@@ -28,6 +29,7 @@ export default function OtpVerify({
   character,
   phone,
   posterId,
+  posterToken,
   onClaimed,
   onChangePhone,
 }: OtpVerifyProps) {
@@ -108,14 +110,29 @@ export default function OtpVerify({
     try {
       const verifyRes = await verifyOtp(phone, code);
       const token = verifyRes.session.access_token;
-      // Immediately claim the character with the fresh token.
-      await claimCharacter({
-        characterSlug: character.slug,
-        posterId,
-        source: 'qr_poster',
-        accessToken: token,
-      });
-      onClaimed(token);
+      try {
+        // Claim with the fresh token. Backend requires poster_id + poster_token;
+        // empty strings will be rejected (or bypassed only by local dev backends).
+        await claimCharacter({
+          characterSlug: character.slug,
+          posterId: posterId ?? '',
+          posterToken: posterToken ?? '',
+          source: 'qr_poster',
+          accessToken: token,
+        });
+        onClaimed(token, character);
+      } catch (claimErr) {
+        // ALREADY_CLAIMED: user has a prior character. Show that one on success.
+        if (claimErr instanceof ApiError && claimErr.code === 'ALREADY_CLAIMED') {
+          const existing = extractExistingClaim(claimErr);
+          const existingChar = existing ? getCharacter(existing.character_slug) : undefined;
+          if (existingChar) {
+            onClaimed(token, existingChar);
+            return;
+          }
+        }
+        throw claimErr;
+      }
     } catch (err) {
       setError(messageForError(err));
       setIsSubmitting(false);
@@ -270,6 +287,9 @@ function messageForError(err: unknown): string {
     }
     if (err.code === 'INVALID_SLUG') {
       return 'That character link looks broken. Try scanning the QR poster again.';
+    }
+    if (err.code === 'INVALID_POSTER_TOKEN') {
+      return 'This QR poster link looks invalid. Scan the poster again or download Mapier directly.';
     }
     if (err.code === 'UNAUTHORIZED') {
       return 'Your session expired before we could claim. Try requesting a new code.';

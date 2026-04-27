@@ -4,7 +4,7 @@ import ClaimFlow from './ClaimFlow';
 
 interface PageProps {
   params: Promise<{ character: string }>;
-  searchParams: Promise<{ p?: string | string[] }>;
+  searchParams: Promise<{ p?: string | string[]; t?: string | string[] }>;
 }
 
 export default async function CharacterPage({ params, searchParams }: PageProps) {
@@ -16,10 +16,12 @@ export default async function CharacterPage({ params, searchParams }: PageProps)
     notFound();
   }
 
-  const rawPoster = sp.p;
-  const posterId = Array.isArray(rawPoster) ? rawPoster[0] : rawPoster;
+  const posterId = Array.isArray(sp.p) ? sp.p[0] : sp.p;
+  const posterToken = Array.isArray(sp.t) ? sp.t[0] : sp.t;
 
-  return <ClaimFlow character={character} posterId={posterId} />;
+  return (
+    <ClaimFlow character={character} posterId={posterId} posterToken={posterToken} />
+  );
 }
 
 export function generateStaticParams() {

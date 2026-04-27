@@ -9,6 +9,8 @@ export type ApiErrorCode =
   | 'INVALID_OTP'
   | 'OTP_EXPIRED'
   | 'INVALID_SLUG'
+  | 'INVALID_POSTER_TOKEN'
+  | 'ALREADY_CLAIMED'
   | 'VALIDATION_ERROR'
   | 'UNAUTHORIZED'
   | 'NETWORK_ERROR'
@@ -17,12 +19,22 @@ export type ApiErrorCode =
 export class ApiError extends Error {
   readonly code: ApiErrorCode;
   readonly status: number;
+  // Optional `error.data` block — used by ALREADY_CLAIMED to carry the user's
+  // pre-existing character so the UI can render their actual claim instead of
+  // the one they just tried to scan.
+  readonly data: Record<string, unknown> | null;
 
-  constructor(code: ApiErrorCode, message: string, status: number) {
+  constructor(
+    code: ApiErrorCode,
+    message: string,
+    status: number,
+    data: Record<string, unknown> | null = null,
+  ) {
     super(message);
     this.name = 'ApiError';
     this.code = code;
     this.status = status;
+    this.data = data;
   }
 }
 
@@ -33,7 +45,7 @@ interface ApiSuccess<T> {
 
 interface ApiFailure {
   success: false;
-  error: { code: string; message: string };
+  error: { code: string; message: string; data?: Record<string, unknown> };
 }
 
 type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
@@ -81,11 +93,10 @@ async function postJson<T>(
   }
 
   if (!res.ok || !payload || payload.success === false) {
-    const code = (payload && payload.success === false ? payload.error.code : undefined) ?? 'UNKNOWN';
-    const message =
-      (payload && payload.success === false ? payload.error.message : undefined) ??
-      `Request failed with status ${res.status}.`;
-    throw new ApiError(code as ApiErrorCode, message, res.status);
+    const failure = payload && payload.success === false ? payload.error : undefined;
+    const code = failure?.code ?? 'UNKNOWN';
+    const message = failure?.message ?? `Request failed with status ${res.status}.`;
+    throw new ApiError(code as ApiErrorCode, message, res.status, failure?.data ?? null);
   }
 
   return payload.data;
@@ -130,7 +141,8 @@ export function verifyOtp(phone: string, code: string): Promise<VerifyOtpRespons
 
 export interface ClaimCharacterArgs {
   characterSlug: string;
-  posterId?: string;
+  posterId: string;
+  posterToken: string;
   source?: string;
   accessToken: string;
 }
@@ -143,9 +155,19 @@ export interface ClaimCharacterResponse {
   claimed_at: string;
 }
 
+// Payload returned in ALREADY_CLAIMED 409 errors so the UI can render the
+// user's actual prior character instead of the one they just tried to claim.
+export interface ExistingClaim {
+  character_slug: string;
+  tier: string;
+  rarity_label: string;
+  claimed_at: string;
+}
+
 export function claimCharacter({
   characterSlug,
   posterId,
+  posterToken,
   source,
   accessToken,
 }: ClaimCharacterArgs): Promise<ClaimCharacterResponse> {
@@ -153,9 +175,31 @@ export function claimCharacter({
     '/character/claim',
     {
       character_slug: characterSlug,
-      ...(posterId ? { poster_id: posterId } : {}),
+      poster_id: posterId,
+      poster_token: posterToken,
       ...(source ? { source } : {}),
     },
     { authToken: accessToken },
   );
+}
+
+export function extractExistingClaim(err: unknown): ExistingClaim | null {
+  if (!(err instanceof ApiError) || err.code !== 'ALREADY_CLAIMED') return null;
+  const existing = err.data?.existing_claim;
+  if (!existing || typeof existing !== 'object') return null;
+  const e = existing as Record<string, unknown>;
+  if (
+    typeof e.character_slug !== 'string' ||
+    typeof e.tier !== 'string' ||
+    typeof e.rarity_label !== 'string' ||
+    typeof e.claimed_at !== 'string'
+  ) {
+    return null;
+  }
+  return {
+    character_slug: e.character_slug,
+    tier: e.tier,
+    rarity_label: e.rarity_label,
+    claimed_at: e.claimed_at,
+  };
 }

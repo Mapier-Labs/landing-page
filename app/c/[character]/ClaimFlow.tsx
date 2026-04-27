@@ -13,6 +13,7 @@ type Step = 'reveal' | 'phone' | 'otp' | 'success';
 interface ClaimFlowProps {
   character: Character;
   posterId?: string;
+  posterToken?: string;
 }
 
 // Dev-only step override: in development, ?step=phone|otp|success jumps the flow forward
@@ -27,21 +28,26 @@ function useInitialStep(): Step {
   return 'reveal';
 }
 
-export default function ClaimFlow({ character, posterId }: ClaimFlowProps) {
+export default function ClaimFlow({ character, posterId, posterToken }: ClaimFlowProps) {
   const initial = useInitialStep();
   const [step, setStep] = useState<Step>(initial);
   // Phone is held in module state across steps so OTP verify can re-use it.
   // We keep tokens in component state only — never localStorage — per spec.
   const [phone, setPhone] = useState('');
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  // Character displayed on the success screen. Defaults to the URL slug, but
+  // gets overridden when the backend returns ALREADY_CLAIMED so the user sees
+  // their actual prior character, not the one they just tried to scan.
+  const [displayCharacter, setDisplayCharacter] = useState<Character>(character);
 
   const goToPhone = useCallback(() => setStep('phone'), []);
   const goToOtp = useCallback((submittedPhone: string) => {
     setPhone(submittedPhone);
     setStep('otp');
   }, []);
-  const goToSuccess = useCallback((token: string) => {
+  const goToSuccess = useCallback((token: string, claimedAs: Character) => {
     setAccessToken(token);
+    setDisplayCharacter(claimedAs);
     setStep('success');
   }, []);
   const goBackToPhone = useCallback(() => setStep('phone'), []);
@@ -64,10 +70,11 @@ export default function ClaimFlow({ character, posterId }: ClaimFlowProps) {
         character={character}
         phone={phone}
         posterId={posterId}
+        posterToken={posterToken}
         onClaimed={goToSuccess}
         onChangePhone={goBackToPhone}
       />
     );
   }
-  return <ClaimSuccess character={character} accessToken={accessToken} />;
+  return <ClaimSuccess character={displayCharacter} accessToken={accessToken} />;
 }
