@@ -1,0 +1,59 @@
+'use client';
+
+import { useCallback, useState } from 'react';
+import type { Character } from '@/lib/characters';
+import CharacterReveal from './CharacterReveal';
+import PhoneEntry from './PhoneEntry';
+import OtpVerify from './OtpVerify';
+import ClaimSuccess from './ClaimSuccess';
+
+type Step = 'reveal' | 'phone' | 'otp' | 'success';
+
+interface ClaimFlowProps {
+  character: Character;
+  posterId?: string;
+}
+
+export default function ClaimFlow({ character, posterId }: ClaimFlowProps) {
+  const [step, setStep] = useState<Step>('reveal');
+  // Phone is held in module state across steps so OTP verify can re-use it.
+  // We keep tokens in component state only — never localStorage — per spec.
+  const [phone, setPhone] = useState('');
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  const goToPhone = useCallback(() => setStep('phone'), []);
+  const goToOtp = useCallback((submittedPhone: string) => {
+    setPhone(submittedPhone);
+    setStep('otp');
+  }, []);
+  const goToSuccess = useCallback((token: string) => {
+    setAccessToken(token);
+    setStep('success');
+  }, []);
+  const goBackToPhone = useCallback(() => setStep('phone'), []);
+
+  if (step === 'reveal') {
+    return <CharacterReveal character={character} onContinue={goToPhone} />;
+  }
+  if (step === 'phone') {
+    return (
+      <PhoneEntry
+        character={character}
+        initialPhone={phone}
+        onSubmitted={goToOtp}
+      />
+    );
+  }
+  if (step === 'otp') {
+    return (
+      <OtpVerify
+        character={character}
+        phone={phone}
+        posterId={posterId}
+        onClaimed={goToSuccess}
+        onChangePhone={goBackToPhone}
+      />
+    );
+  }
+  return <ClaimSuccess character={character} accessToken={accessToken} />;
+}
