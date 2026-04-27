@@ -72,7 +72,7 @@ export function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className="flex w-full items-center justify-center gap-2 rounded-full bg-[#131311] px-[18px] py-3 text-base font-bold tracking-tight text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex w-full items-center justify-center gap-2 rounded-full bg-[#131311] px-[18px] py-3 font-nunito text-[16px] font-bold tracking-[-0.24px] text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
     >
       {children}
     </button>

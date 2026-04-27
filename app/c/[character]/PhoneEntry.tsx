@@ -60,32 +60,43 @@ export default function PhoneEntry({ character, initialPhone, onSubmitted }: Pho
       <PastelBackdrop />
       <HomeButton />
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-5 pb-8 pt-24">
-        {/* Header row: title + small sticker */}
-        <div className="flex items-start justify-between gap-3 pr-2">
-          <div className="flex flex-col gap-3">
-            <h1 className="font-serif text-4xl font-bold leading-[1.1] tracking-tight text-[#131311] [text-shadow:0_0_40px_rgba(0,0,0,0.12)] max-w-[200px]">
-              Register to Mapier
-            </h1>
-            <p className="max-w-[200px] text-base font-bold tracking-tight text-[#797876]">
-              Enter your phone number to get started.
-            </p>
-          </div>
-
-          <div className="relative h-[120px] w-[120px] shrink-0">
-            <Sparkle className="absolute -left-1 top-12 h-8 w-8 -rotate-12" />
-            <Sparkle className="absolute -right-1 top-1 h-8 w-8 rotate-[18deg]" />
-            <div className="rotate-[12deg]">
-              <Image
-                src={`/characters/${character.slug}.png`}
-                alt=""
-                width={110}
-                height={110}
-                priority
-                className="h-auto w-[110px] select-none drop-shadow-[0_8px_20px_rgba(0,0,0,0.18)]"
-              />
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[402px] flex-col px-5 pb-8 pt-[140px]">
+        {/* Header — sticker floats to the right and the title + subtitle flow around it,
+            matching the Figma layout where copy hugs the character. The container clears the
+            float at the end so the form below isn't affected. */}
+        <div className="pr-1 after:block after:clear-both after:content-['']">
+          {/* Floating sticker block — float-right pulls it to the right edge so text flows around */}
+          <div className="relative ml-3 -mr-1 mt-2 float-right h-[170px] w-[170px]">
+            <div className="absolute inset-0 z-10 flex items-center justify-center">
+              <div className="animate-[float-slow_4.5s_ease-in-out_infinite]">
+                <div className="rotate-[12deg]">
+                  <Image
+                    src={`/characters/${character.slug}.png`}
+                    alt=""
+                    width={160}
+                    height={160}
+                    priority
+                    className="h-auto w-[160px] select-none drop-shadow-[0_10px_24px_rgba(0,0,0,0.2)]"
+                  />
+                </div>
+              </div>
+            </div>
+            {/* Sparkles drift on/off the sticker */}
+            <div className="pointer-events-none absolute -left-2 bottom-3 z-20 animate-[float-fast_3.4s_ease-in-out_infinite]">
+              <Sparkle className="h-9 w-9 -rotate-12 drop-shadow-md" />
+            </div>
+            <div className="pointer-events-none absolute -right-1 top-2 z-20 animate-[float-slow_4.8s_ease-in-out_-1.2s_infinite]">
+              <Sparkle className="h-9 w-9 rotate-[18deg] drop-shadow-md" />
             </div>
           </div>
+
+          {/* Title + subtitle wrap naturally around the floated sticker. */}
+          <h1 className="font-display text-[30px] font-black leading-[34px] tracking-[-1.4px] text-[#131311] [paint-order:stroke] [-webkit-text-stroke:3px_white] [text-shadow:0_0_28px_rgba(0,0,0,0.08)]">
+            Register to Mapier
+          </h1>
+          <p className="mt-3 font-nunito text-[14px] font-medium leading-[20px] text-[#797876]">
+            Enter your phone number to get started.
+          </p>
         </div>
 
         <div className="flex-1" />
@@ -99,7 +110,7 @@ export default function PhoneEntry({ character, initialPhone, onSubmitted }: Pho
                 value={dial}
                 onChange={(e) => setDial(e.target.value as '+1' | '+86')}
                 aria-label="Country code"
-                className="appearance-none rounded-full bg-white px-4 py-3 pr-7 text-base font-bold tracking-tight text-[#131311] shadow-[0_0_20px_rgba(0,0,0,0.12)] outline-none focus:ring-2 focus:ring-[#131311]/10"
+                className="w-[68px] appearance-none rounded-full bg-white px-3 py-3 text-center font-nunito text-[16px] font-bold tracking-tight text-[#131311] shadow-[0_0_20px_rgba(0,0,0,0.12)] outline-none focus:ring-2 focus:ring-[#131311]/10"
               >
                 {COUNTRIES.map((c) => (
                   <option key={c.code} value={c.dial}>

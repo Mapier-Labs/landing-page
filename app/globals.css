@@ -10,6 +10,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-nunito: var(--font-nunito);
+  --font-display: var(--font-display);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -29,4 +31,44 @@ body {
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Floating motion used by the QR claim flow's sticker + sparkles. The keyframes
+   include a small X drift so the sparkles wander on/off the sticker rather than
+   bobbing in lockstep — feels alive without distracting. */
+@keyframes float-slow {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-3px, -8px);
+  }
+  50% {
+    transform: translate(2px, -16px);
+  }
+  75% {
+    transform: translate(5px, -6px);
+  }
+}
+
+@keyframes float-fast {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(4px, 6px);
+  }
+  50% {
+    transform: translate(-2px, 12px);
+  }
+  75% {
+    transform: translate(-5px, 4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-[float-slow"],
+  [class*="animate-[float-fast"] {
+    animation: none !important;
+  }
 }

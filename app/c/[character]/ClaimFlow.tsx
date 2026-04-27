@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import type { Character } from '@/lib/characters';
 import CharacterReveal from './CharacterReveal';
 import PhoneEntry from './PhoneEntry';
@@ -14,8 +15,21 @@ interface ClaimFlowProps {
   posterId?: string;
 }
 
+// Dev-only step override: in development, ?step=phone|otp|success jumps the flow forward
+// for visual QA. Production users always start at 'reveal'.
+function useInitialStep(): Step {
+  const params = useSearchParams();
+  if (process.env.NODE_ENV !== 'development') return 'reveal';
+  const requested = params.get('step');
+  if (requested === 'phone' || requested === 'otp' || requested === 'success') {
+    return requested;
+  }
+  return 'reveal';
+}
+
 export default function ClaimFlow({ character, posterId }: ClaimFlowProps) {
-  const [step, setStep] = useState<Step>('reveal');
+  const initial = useInitialStep();
+  const [step, setStep] = useState<Step>(initial);
   // Phone is held in module state across steps so OTP verify can re-use it.
   // We keep tokens in component state only — never localStorage — per spec.
   const [phone, setPhone] = useState('');
