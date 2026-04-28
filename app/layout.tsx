@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
-import { Nunito } from "next/font/google";
+import { Nunito, Fraunces } from "next/font/google";
 import "./globals.css";
 
 const nunito = Nunito({
   variable: "--font-nunito",
   subsets: ["latin"],
+  weight: ["500", "700"],
+});
+
+// Hornbill Trial substitute: Fraunces (variable display serif) at heaviest weight
+// captures the chunky, quirky-bold character of the design.
+const fraunces = Fraunces({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["700", "900"],
 });
 
 export const metadata: Metadata = {
@@ -97,7 +106,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${nunito.className} antialiased`}>{children}</body>
+      <body className={`${nunito.className} ${nunito.variable} ${fraunces.variable} antialiased`}>
+        {children}
+      </body>
     </html>
   );
 }
