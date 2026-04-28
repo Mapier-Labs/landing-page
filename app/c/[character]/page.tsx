@@ -21,9 +21,3 @@ export default async function CharacterPage({ params, searchParams }: PageProps)
 
   return <ClaimFlow character={character} posterId={posterId} posterToken={posterToken} />;
 }
-
-export function generateStaticParams() {
-  // Pre-render the character pages at build time for fast loads from QR scans.
-  // Dynamic slugs (none expected) would still 404 via notFound() above.
-  return [];
-}
