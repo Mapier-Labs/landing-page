@@ -1,20 +1,20 @@
 // Thin fetch wrapper for the Mapier QR-claim API.
 // Backend is being built in parallel — keep this in sync with the locked contract.
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? '';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
 
 export type ApiErrorCode =
-  | 'INVALID_PHONE'
-  | 'RATE_LIMITED'
-  | 'INVALID_OTP'
-  | 'OTP_EXPIRED'
-  | 'INVALID_SLUG'
-  | 'INVALID_POSTER_TOKEN'
-  | 'ALREADY_CLAIMED'
-  | 'VALIDATION_ERROR'
-  | 'UNAUTHORIZED'
-  | 'NETWORK_ERROR'
-  | 'UNKNOWN';
+  | "INVALID_PHONE"
+  | "RATE_LIMITED"
+  | "INVALID_OTP"
+  | "OTP_EXPIRED"
+  | "INVALID_SLUG"
+  | "INVALID_POSTER_TOKEN"
+  | "ALREADY_CLAIMED"
+  | "VALIDATION_ERROR"
+  | "UNAUTHORIZED"
+  | "NETWORK_ERROR"
+  | "UNKNOWN";
 
 export class ApiError extends Error {
   readonly code: ApiErrorCode;
@@ -28,10 +28,10 @@ export class ApiError extends Error {
     code: ApiErrorCode,
     message: string,
     status: number,
-    data: Record<string, unknown> | null = null,
+    data: Record<string, unknown> | null = null
   ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
     this.code = code;
     this.status = status;
     this.data = data;
@@ -50,21 +50,13 @@ interface ApiFailure {
 
 type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
 
-async function postJson<T>(
-  path: string,
-  body: unknown,
-  init?: { authToken?: string },
-): Promise<T> {
+async function postJson<T>(path: string, body: unknown, init?: { authToken?: string }): Promise<T> {
   if (!BACKEND_URL) {
-    throw new ApiError(
-      'NETWORK_ERROR',
-      'NEXT_PUBLIC_BACKEND_URL is not configured.',
-      0,
-    );
+    throw new ApiError("NETWORK_ERROR", "NEXT_PUBLIC_BACKEND_URL is not configured.", 0);
   }
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   if (init?.authToken) {
     headers.Authorization = `Bearer ${init.authToken}`;
@@ -73,15 +65,15 @@ async function postJson<T>(
   let res: Response;
   try {
     res = await fetch(`${BACKEND_URL}${path}`, {
-      method: 'POST',
+      method: "POST",
       headers,
       body: JSON.stringify(body),
     });
   } catch (err) {
     throw new ApiError(
-      'NETWORK_ERROR',
-      err instanceof Error ? err.message : 'Network request failed.',
-      0,
+      "NETWORK_ERROR",
+      err instanceof Error ? err.message : "Network request failed.",
+      0
     );
   }
 
@@ -94,7 +86,7 @@ async function postJson<T>(
 
   if (!res.ok || !payload || payload.success === false) {
     const failure = payload && payload.success === false ? payload.error : undefined;
-    const code = failure?.code ?? 'UNKNOWN';
+    const code = failure?.code ?? "UNKNOWN";
     const message = failure?.message ?? `Request failed with status ${res.status}.`;
     throw new ApiError(code as ApiErrorCode, message, res.status, failure?.data ?? null);
   }
@@ -110,7 +102,7 @@ export interface RequestOtpResponse {
 }
 
 export function requestOtp(phone: string): Promise<RequestOtpResponse> {
-  return postJson<RequestOtpResponse>('/auth/request-otp', { phone });
+  return postJson<RequestOtpResponse>("/auth/request-otp", { phone });
 }
 
 // ---------- /auth/verify-otp ----------
@@ -134,7 +126,7 @@ export interface VerifyOtpResponse {
 }
 
 export function verifyOtp(phone: string, code: string): Promise<VerifyOtpResponse> {
-  return postJson<VerifyOtpResponse>('/auth/verify-otp', { phone, code });
+  return postJson<VerifyOtpResponse>("/auth/verify-otp", { phone, code });
 }
 
 // ---------- /character/claim ----------
@@ -172,27 +164,27 @@ export function claimCharacter({
   accessToken,
 }: ClaimCharacterArgs): Promise<ClaimCharacterResponse> {
   return postJson<ClaimCharacterResponse>(
-    '/character/claim',
+    "/character/claim",
     {
       character_slug: characterSlug,
       poster_id: posterId,
       poster_token: posterToken,
       ...(source ? { source } : {}),
     },
-    { authToken: accessToken },
+    { authToken: accessToken }
   );
 }
 
 export function extractExistingClaim(err: unknown): ExistingClaim | null {
-  if (!(err instanceof ApiError) || err.code !== 'ALREADY_CLAIMED') return null;
+  if (!(err instanceof ApiError) || err.code !== "ALREADY_CLAIMED") return null;
   const existing = err.data?.existing_claim;
-  if (!existing || typeof existing !== 'object') return null;
+  if (!existing || typeof existing !== "object") return null;
   const e = existing as Record<string, unknown>;
   if (
-    typeof e.character_slug !== 'string' ||
-    typeof e.tier !== 'string' ||
-    typeof e.rarity_label !== 'string' ||
-    typeof e.claimed_at !== 'string'
+    typeof e.character_slug !== "string" ||
+    typeof e.tier !== "string" ||
+    typeof e.rarity_label !== "string" ||
+    typeof e.claimed_at !== "string"
   ) {
     return null;
   }

@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import { Home } from 'lucide-react';
+import Link from "next/link";
+import { Home } from "lucide-react";
 
 /**
  * Pastel cloud backdrop used across the claim flow steps. Approximates the
@@ -38,12 +38,7 @@ export function HomeButton() {
  */
 export function Sparkle({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 60 60"
-      fill="none"
-      aria-hidden
-      className={className}
-    >
+    <svg viewBox="0 0 60 60" fill="none" aria-hidden className={className}>
       <path
         d="M30 2 L34 26 L58 30 L34 34 L30 58 L26 34 L2 30 L26 26 Z"
         fill="#ffd900"
@@ -58,12 +53,12 @@ export function Sparkle({ className }: { className?: string }) {
 /** Standard pill button used for the primary CTA on every step. */
 export function PrimaryButton({
   children,
-  type = 'button',
+  type = "button",
   disabled,
   onClick,
 }: {
   children: React.ReactNode;
-  type?: 'button' | 'submit';
+  type?: "button" | "submit";
   disabled?: boolean;
   onClick?: () => void;
 }) {

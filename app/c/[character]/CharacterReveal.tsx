@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import type { Character } from '@/lib/characters';
-import { HomeButton, PastelBackdrop, PrimaryButton, Sparkle } from './_shared';
+import Image from "next/image";
+import type { Character } from "@/lib/characters";
+import { HomeButton, PastelBackdrop, PrimaryButton, Sparkle } from "./_shared";
 
 interface CharacterRevealProps {
   character: Character;
@@ -83,7 +83,7 @@ export default function CharacterReveal({ character, onContinue }: CharacterReve
   );
 }
 
-function TierBadge({ tier }: { tier: Character['tier'] }) {
+function TierBadge({ tier }: { tier: Character["tier"] }) {
   // Matches Figma: SSS uses gold (#a38605 with yellow glow), other tiers
   // share the same dark amber treatment for v1 — easy to extend later.
   return (

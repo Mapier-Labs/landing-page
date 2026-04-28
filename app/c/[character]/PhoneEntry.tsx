@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useState } from 'react';
-import { ChevronRight, Loader2 } from 'lucide-react';
-import type { Character } from '@/lib/characters';
-import { ApiError, requestOtp } from '@/lib/api';
-import { HomeButton, PastelBackdrop, Sparkle } from './_shared';
+import Image from "next/image";
+import { useState } from "react";
+import { ChevronRight, Loader2 } from "lucide-react";
+import type { Character } from "@/lib/characters";
+import { ApiError, requestOtp } from "@/lib/api";
+import { HomeButton, PastelBackdrop, Sparkle } from "./_shared";
 
 interface PhoneEntryProps {
   character: Character;
@@ -13,29 +13,29 @@ interface PhoneEntryProps {
   onSubmitted: (phoneE164: string) => void;
 }
 
-type Country = { code: 'US' | 'CN'; dial: '+1' | '+86'; label: string };
+type Country = { code: "US" | "CN"; dial: "+1" | "+86"; label: string };
 
 const COUNTRIES: readonly Country[] = [
-  { code: 'US', dial: '+1', label: 'United States' },
-  { code: 'CN', dial: '+86', label: 'China' },
+  { code: "US", dial: "+1", label: "United States" },
+  { code: "CN", dial: "+86", label: "China" },
 ];
 
 export default function PhoneEntry({ character, initialPhone, onSubmitted }: PhoneEntryProps) {
   // Pre-fill from already-entered phone if user navigated back.
-  const initialDial: '+1' | '+86' = initialPhone.startsWith('+86') ? '+86' : '+1';
+  const initialDial: "+1" | "+86" = initialPhone.startsWith("+86") ? "+86" : "+1";
   const initialLocal = initialPhone.startsWith(initialDial)
     ? initialPhone.slice(initialDial.length)
-    : '';
+    : "";
 
-  const [dial, setDial] = useState<'+1' | '+86'>(initialDial);
+  const [dial, setDial] = useState<"+1" | "+86">(initialDial);
   const [localNumber, setLocalNumber] = useState(initialLocal);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const sanitizedDigits = localNumber.replace(/\D/g, '');
+  const sanitizedDigits = localNumber.replace(/\D/g, "");
   const isPotentiallyValid =
-    (dial === '+1' && sanitizedDigits.length === 10) ||
-    (dial === '+86' && sanitizedDigits.length === 11);
+    (dial === "+1" && sanitizedDigits.length === 10) ||
+    (dial === "+86" && sanitizedDigits.length === 11);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,7 +108,7 @@ export default function PhoneEntry({ character, initialPhone, onSubmitted }: Pho
             <div className="relative shrink-0">
               <select
                 value={dial}
-                onChange={(e) => setDial(e.target.value as '+1' | '+86')}
+                onChange={(e) => setDial(e.target.value as "+1" | "+86")}
                 aria-label="Country code"
                 className="w-[68px] appearance-none rounded-full bg-white px-3 py-3 text-center font-nunito text-[16px] font-bold tracking-tight text-[#131311] shadow-[0_0_20px_rgba(0,0,0,0.12)] outline-none focus:ring-2 focus:ring-[#131311]/10"
               >
@@ -126,7 +126,7 @@ export default function PhoneEntry({ character, initialPhone, onSubmitted }: Pho
               autoComplete="tel-national"
               value={localNumber}
               onChange={(e) => setLocalNumber(e.target.value)}
-              placeholder={dial === '+1' ? '123-456-7890' : '13800138000'}
+              placeholder={dial === "+1" ? "123-456-7890" : "13800138000"}
               className="flex-1 rounded-full bg-white px-5 py-3 text-base font-bold tracking-tight text-[#131311] placeholder:text-[#b2b2b2] shadow-[0_0_20px_rgba(0,0,0,0.12)] outline-none focus:ring-2 focus:ring-[#131311]/10"
             />
           </div>
@@ -165,16 +165,16 @@ export default function PhoneEntry({ character, initialPhone, onSubmitted }: Pho
 
 function messageForError(err: unknown): string {
   if (err instanceof ApiError) {
-    if (err.code === 'INVALID_PHONE') {
-      return 'That phone number doesn’t look right. Double-check and try again.';
+    if (err.code === "INVALID_PHONE") {
+      return "That phone number doesn’t look right. Double-check and try again.";
     }
-    if (err.code === 'RATE_LIMITED') {
-      return 'Too many attempts. Wait a minute, then try again.';
+    if (err.code === "RATE_LIMITED") {
+      return "Too many attempts. Wait a minute, then try again.";
     }
-    if (err.code === 'NETWORK_ERROR') {
-      return 'Network hiccup. Check your connection and try again.';
+    if (err.code === "NETWORK_ERROR") {
+      return "Network hiccup. Check your connection and try again.";
     }
     return err.message;
   }
-  return 'Something went wrong. Try again in a moment.';
+  return "Something went wrong. Try again in a moment.";
 }

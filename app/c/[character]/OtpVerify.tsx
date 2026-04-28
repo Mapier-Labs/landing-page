@@ -1,18 +1,11 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import {
-  ChangeEvent,
-  ClipboardEvent,
-  KeyboardEvent,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-import { ChevronRight, Loader2 } from 'lucide-react';
-import { type Character, getCharacter } from '@/lib/characters';
-import { ApiError, claimCharacter, extractExistingClaim, requestOtp, verifyOtp } from '@/lib/api';
-import { HomeButton, PastelBackdrop, Sparkle } from './_shared';
+import Image from "next/image";
+import { ChangeEvent, ClipboardEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { ChevronRight, Loader2 } from "lucide-react";
+import { type Character, getCharacter } from "@/lib/characters";
+import { ApiError, claimCharacter, extractExistingClaim, requestOtp, verifyOtp } from "@/lib/api";
+import { HomeButton, PastelBackdrop, Sparkle } from "./_shared";
 
 interface OtpVerifyProps {
   character: Character;
@@ -33,7 +26,7 @@ export default function OtpVerify({
   onClaimed,
   onChangePhone,
 }: OtpVerifyProps) {
-  const [digits, setDigits] = useState<string[]>(() => Array(CODE_LENGTH).fill(''));
+  const [digits, setDigits] = useState<string[]>(() => Array(CODE_LENGTH).fill(""));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +39,7 @@ export default function OtpVerify({
     inputRefs.current[0]?.focus();
   }, []);
 
-  const code = digits.join('');
+  const code = digits.join("");
   const codeComplete = code.length === CODE_LENGTH && /^\d{6}$/.test(code);
 
   const setDigitAt = (idx: number, value: string) => {
@@ -60,7 +53,7 @@ export default function OtpVerify({
   const handleChange = (idx: number, e: ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     // strip everything but digits, take last char (handles autofill that fills 1 char at a time)
-    const digit = raw.replace(/\D/g, '').slice(-1);
+    const digit = raw.replace(/\D/g, "").slice(-1);
     setDigitAt(idx, digit);
     if (digit && idx < CODE_LENGTH - 1) {
       inputRefs.current[idx + 1]?.focus();
@@ -68,23 +61,23 @@ export default function OtpVerify({
   };
 
   const handleKeyDown = (idx: number, e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !digits[idx] && idx > 0) {
+    if (e.key === "Backspace" && !digits[idx] && idx > 0) {
       e.preventDefault();
-      setDigitAt(idx - 1, '');
+      setDigitAt(idx - 1, "");
       inputRefs.current[idx - 1]?.focus();
     }
-    if (e.key === 'ArrowLeft' && idx > 0) {
+    if (e.key === "ArrowLeft" && idx > 0) {
       e.preventDefault();
       inputRefs.current[idx - 1]?.focus();
     }
-    if (e.key === 'ArrowRight' && idx < CODE_LENGTH - 1) {
+    if (e.key === "ArrowRight" && idx < CODE_LENGTH - 1) {
       e.preventDefault();
       inputRefs.current[idx + 1]?.focus();
     }
   };
 
   const handlePaste = (idx: number, e: ClipboardEvent<HTMLInputElement>) => {
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '');
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "");
     if (!pasted) return;
     e.preventDefault();
     const next = [...digits];
@@ -115,15 +108,15 @@ export default function OtpVerify({
         // empty strings will be rejected (or bypassed only by local dev backends).
         await claimCharacter({
           characterSlug: character.slug,
-          posterId: posterId ?? '',
-          posterToken: posterToken ?? '',
-          source: 'qr_poster',
+          posterId: posterId ?? "",
+          posterToken: posterToken ?? "",
+          source: "qr_poster",
           accessToken: token,
         });
         onClaimed(token, character);
       } catch (claimErr) {
         // ALREADY_CLAIMED: user has a prior character. Show that one on success.
-        if (claimErr instanceof ApiError && claimErr.code === 'ALREADY_CLAIMED') {
+        if (claimErr instanceof ApiError && claimErr.code === "ALREADY_CLAIMED") {
           const existing = extractExistingClaim(claimErr);
           const existingChar = existing ? getCharacter(existing.character_slug) : undefined;
           if (existingChar) {
@@ -146,8 +139,8 @@ export default function OtpVerify({
     setIsResending(true);
     try {
       await requestOtp(phone);
-      setResendNotice('A fresh code is on the way.');
-      setDigits(Array(CODE_LENGTH).fill(''));
+      setResendNotice("A fresh code is on the way.");
+      setDigits(Array(CODE_LENGTH).fill(""));
       inputRefs.current[0]?.focus();
     } catch (err) {
       setError(messageForError(err));
@@ -191,7 +184,7 @@ export default function OtpVerify({
             Verify your number
           </h1>
           <p className="mt-3 font-nunito text-[14px] font-medium leading-[20px] text-[#797876]">
-            Enter the code we sent to{' '}
+            Enter the code we sent to{" "}
             <button
               type="button"
               onClick={onChangePhone}
@@ -215,7 +208,7 @@ export default function OtpVerify({
                   inputRefs.current[i] = el;
                 }}
                 inputMode="numeric"
-                autoComplete={i === 0 ? 'one-time-code' : 'off'}
+                autoComplete={i === 0 ? "one-time-code" : "off"}
                 pattern="[0-9]*"
                 maxLength={1}
                 value={d}
@@ -235,11 +228,9 @@ export default function OtpVerify({
               disabled={isResending}
               className="text-base font-bold tracking-tight text-[#797876] underline-offset-4 hover:text-[#131311] hover:underline disabled:opacity-50"
             >
-              {isResending ? 'Resending…' : 'Resend the code'}
+              {isResending ? "Resending…" : "Resend the code"}
             </button>
-            {resendNotice && (
-              <p className="text-sm text-[#797876]">{resendNotice}</p>
-            )}
+            {resendNotice && <p className="text-sm text-[#797876]">{resendNotice}</p>}
           </div>
 
           {error && (
@@ -276,28 +267,28 @@ export default function OtpVerify({
 
 function messageForError(err: unknown): string {
   if (err instanceof ApiError) {
-    if (err.code === 'INVALID_OTP') {
-      return 'That code didn’t match. Double-check and try again.';
+    if (err.code === "INVALID_OTP") {
+      return "That code didn’t match. Double-check and try again.";
     }
-    if (err.code === 'OTP_EXPIRED') {
+    if (err.code === "OTP_EXPIRED") {
       return 'This code expired. Tap "Resend the code" to get a fresh one.';
     }
-    if (err.code === 'RATE_LIMITED') {
-      return 'Too many attempts. Wait a minute, then try again.';
+    if (err.code === "RATE_LIMITED") {
+      return "Too many attempts. Wait a minute, then try again.";
     }
-    if (err.code === 'INVALID_SLUG') {
-      return 'That character link looks broken. Try scanning the QR poster again.';
+    if (err.code === "INVALID_SLUG") {
+      return "That character link looks broken. Try scanning the QR poster again.";
     }
-    if (err.code === 'INVALID_POSTER_TOKEN') {
-      return 'This QR poster link looks invalid. Scan the poster again or download Mapier directly.';
+    if (err.code === "INVALID_POSTER_TOKEN") {
+      return "This QR poster link looks invalid. Scan the poster again or download Mapier directly.";
     }
-    if (err.code === 'UNAUTHORIZED') {
-      return 'Your session expired before we could claim. Try requesting a new code.';
+    if (err.code === "UNAUTHORIZED") {
+      return "Your session expired before we could claim. Try requesting a new code.";
     }
-    if (err.code === 'NETWORK_ERROR') {
-      return 'Network hiccup. Check your connection and try again.';
+    if (err.code === "NETWORK_ERROR") {
+      return "Network hiccup. Check your connection and try again.";
     }
     return err.message;
   }
-  return 'Something went wrong. Try again in a moment.';
+  return "Something went wrong. Try again in a moment.";
 }

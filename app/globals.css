@@ -1,43 +1,1217 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand */
+  --color-primary: #4488ff;
+  --color-primary-hover: #3377ee;
+  --color-primary-accent: rgba(68, 136, 255, 0.35);
+  --color-primary-shadow: rgba(68, 136, 255, 0.3);
+
+  /* Text */
+  --color-text: #1a1a1a;
+  --color-text-muted: #888;
+  --color-text-light: #999;
+  --color-text-icon: #555;
+
+  /* Surfaces */
+  --color-bg: #fff;
+  --color-border: #e0e0e0;
+  --color-error: #e44;
+
+  /* Buttons */
+  --color-btn-primary-bg: var(--color-text);
+  --color-btn-primary-text: var(--color-bg);
+  --color-btn-secondary-bg: var(--color-bg);
+  --color-btn-secondary-text: var(--color-text);
+
+  /* Overlay / Glass */
+  --color-overlay: rgba(0, 0, 0, 0.4);
+  --color-glass: rgba(255, 255, 255, 0.75);
+  --color-glass-hover: rgba(255, 255, 255, 0.92);
+  --color-glass-panel: rgba(255, 255, 255, 0.8);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
   --font-nunito: var(--font-nunito);
   --font-display: var(--font-display);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@font-face {
+  font-family: "Hornbill";
+  src: url("/landing/fonts/HornbillTrial-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+html,
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-weight: 700;
+  -webkit-font-smoothing: antialiased;
+  cursor:
+    url("/cursors/normal.png") 12 4,
+    default;
+}
+
+body.is-dragging {
+  cursor:
+    url("/cursors/hold.png") 24 24,
+    grabbing !important;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.bg {
+  position: fixed;
+  inset: 0;
+  background: url("/landing/bg-map.png") center / cover no-repeat;
+  z-index: 0;
+}
+
+.reset-btn {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+  cursor:
+    url("/cursors/hover.png") 12 4,
+    pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.reset-btn:hover {
+  background: var(--color-glass-hover);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.reset-btn:active {
+  transform: scale(0.92);
+}
+
+.reset-btn svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-icon);
+  transition: transform 0.15s ease;
+}
+
+.draggable {
+  position: fixed;
+  cursor:
+    url("/cursors/hover.png") 12 4,
+    grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0px 2px 5px rgba(0, 0, 0, 0.1));
+  transition:
+    filter 0.25s ease,
+    transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform, filter;
+}
+
+.draggable img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.draggable:hover {
+  filter: drop-shadow(0px 5px 14px rgba(0, 0, 0, 0.18));
+}
+
+.draggable.is-grabbing {
+  cursor:
+    url("/cursors/hold.png") 24 24,
+    grabbing;
+  filter: drop-shadow(0px 16px 28px rgba(0, 0, 0, 0.2));
+  transition:
+    filter 0.15s ease,
+    transform 0.15s ease-out;
+}
+
+.draggable.is-releasing {
+  cursor:
+    url("/cursors/release.png") 24 24,
+    default;
+}
+
+body.is-releasing {
+  cursor:
+    url("/cursors/release.png") 24 24,
+    default !important;
+}
+
+.draggable--desc p {
+  font-size: clamp(18px, 1.6vw, 22px);
+  color: var(--color-text);
+  font-weight: 700;
+  letter-spacing: normal;
+  line-height: 1.6;
+  width: clamp(320px, 34vw, 480px);
+  pointer-events: none;
+  text-wrap: balance;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 4px var(--color-bg);
+}
+
+.draggable--icon {
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.draggable--icon img {
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  object-fit: cover;
+}
+
+.draggable--title h1 {
+  font-family: "Hornbill", Georgia, "Times New Roman", serif;
+  font-size: clamp(52px, 8vw, 100px);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 12px var(--color-bg);
+}
+
+.draggable--phone {
+  filter: drop-shadow(0px 4px 20px rgba(0, 0, 0, 0.12));
+}
+
+.draggable--phone:hover {
+  filter: drop-shadow(0px 6px 24px rgba(0, 0, 0, 0.18));
+}
+
+.draggable--phone.is-grabbing {
+  filter: drop-shadow(0px 20px 40px rgba(0, 0, 0, 0.22));
+}
+
+.draggable--btn {
+  filter: drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.08));
+}
+
+.draggable--btn:hover {
+  filter: drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.14));
+}
+
+.draggable--btn.is-grabbing {
+  filter: drop-shadow(0px 12px 24px rgba(0, 0, 0, 0.18));
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 220px;
+  cursor: inherit;
+  padding: 14px 10px;
+  min-width: 180px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.btn svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.btn--cta {
+  background: var(--color-btn-primary-bg);
+  color: var(--color-btn-primary-text);
+}
+
+.btn--cta svg {
+  stroke: var(--color-btn-primary-text);
+}
+
+.btn--secondary {
+  background: var(--color-btn-secondary-bg);
+  color: var(--color-btn-secondary-text);
+}
+
+.btn--link {
+  pointer-events: auto;
+  cursor:
+    url("/cursors/hover.png") 12 4,
+    pointer;
+  text-decoration: none;
+}
+
+.burst-line {
+  position: fixed;
+  height: 7px;
+  border-radius: 3.5px;
+  background: var(--color-text);
+  pointer-events: none;
+  z-index: 9998;
+  transform-origin: 0% 50%;
+}
+
+.footer-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  font-size: 16px;
+  color: var(--color-text);
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .footer-bar {
+    flex-direction: column;
+    gap: 2px;
+    text-align: center;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .draggable {
+    cursor: default !important;
+    transition: none !important;
+    will-change: auto !important;
+    pointer-events: none !important;
+  }
+
+  .draggable:hover {
+    filter: drop-shadow(0px 2px 5px rgba(0, 0, 0, 0.1)) !important;
+  }
+
+  /* Re-enable pointer events on buttons so links still work */
+  .draggable--btn {
+    pointer-events: auto !important;
+  }
+
+  .reset-btn {
+    display: none;
+  }
+
+  .burst-line {
+    display: none;
+  }
+
+  /* Hide phone sticker on mobile */
+  .draggable--phone {
+    display: none !important;
+  }
+
+  /* Vertically centered layout — anchor everything off 50% */
+  .draggable--icon {
+    left: 50% !important;
+    top: calc(50% - 160px) !important;
+    width: 60px !important;
+    height: 60px !important;
+    margin-left: -30px;
+    border-radius: 16px;
+    z-index: 22 !important;
+  }
+
+  .draggable--icon img {
+    border-radius: 16px;
+  }
+
+  .draggable--title {
+    left: 50% !important;
+    top: calc(50% - 88px) !important;
+    transform: translateX(-50%) !important;
+    z-index: 21 !important;
+  }
+
+  .draggable--title h1 {
+    font-size: 56px;
+  }
+
+  .draggable--desc {
+    left: 50% !important;
+    top: calc(50% - 15px) !important;
+    transform: translateX(-50%) !important;
+    z-index: 20 !important;
+  }
+
+  .draggable--desc p {
+    font-size: 18px;
+    width: 300px;
+    text-align: center;
+    line-height: 1.5;
+    text-wrap: balance;
+  }
+
+  /* Buttons stacked vertically, same width, centered */
+  .draggable--btn {
+    left: 50% !important;
+    top: calc(50% + 70px) !important;
+    transform: translateX(-50%) !important;
+    z-index: 20 !important;
+  }
+
+  .draggable--btn + .draggable--btn {
+    top: calc(50% + 130px) !important;
+    z-index: 19 !important;
+  }
+
+  .btn {
+    font-size: 16px;
+    padding: 14px 20px;
+    min-width: 200px;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Background — zoom in slightly to crop attribution text */
+  .bg {
+    transform: scale(1.1);
+    transform-origin: center center;
+  }
+
+  /* Decorative stickers — scattered around periphery */
+  .draggable:has(img[src*="Frame 3185590"]) {
+    width: 100px !important;
+    left: -2% !important;
+    right: auto !important;
+    top: -2% !important;
+  }
+
+  .draggable:has(img[src*="Frame 3185629"]) {
+    width: 70px !important;
+    left: 2% !important;
+    right: auto !important;
+    top: 10% !important;
+  }
+
+  .draggable:has(img[src*="Group 210"]) {
+    width: 90px !important;
+    left: auto !important;
+    right: -2% !important;
+    top: -2% !important;
+  }
+
+  /* Hide 2619 and 2620 on mobile */
+  .draggable:has(img[src*="Group 2619"]) {
+    display: none !important;
+  }
+
+  .draggable:has(img[src*="Group 2620"]) {
+    display: none !important;
+  }
+
+  .draggable:has(img[src*="Group 2627"]) {
+    width: 100px !important;
+    left: -4% !important;
+    right: auto !important;
+    top: 84% !important;
+  }
+
+  .draggable:has(img[src*="Group 2628"]) {
+    width: 55px !important;
+    left: 35% !important;
+    right: auto !important;
+    top: 82% !important;
+  }
+
+  .draggable:has(img[src*="Group 2626"]) {
+    width: 110px !important;
+    left: auto !important;
+    right: -4% !important;
+    top: 82% !important;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@media (max-width: 390px) {
+  .draggable--icon {
+    width: 52px !important;
+    height: 52px !important;
+    margin-left: -26px;
+    top: calc(50% - 150px) !important;
+  }
+
+  .draggable--title {
+    top: calc(50% - 86px) !important;
+  }
+
+  .draggable--title h1 {
+    font-size: 48px;
+  }
+
+  .draggable--desc {
+    top: calc(50% - 18px) !important;
+  }
+
+  .draggable--desc p {
+    width: 260px;
+    font-size: 16px;
+  }
+
+  .draggable--btn {
+    top: calc(50% + 60px) !important;
+  }
+
+  .draggable--btn + .draggable--btn {
+    top: calc(50% + 115px) !important;
+  }
+
+  .btn {
+    font-size: 15px;
+    padding: 12px 18px;
+    min-width: 180px;
+  }
 }
 
-html {
-  scroll-behavior: smooth;
+/* 404 Page */
+.not-found {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.not-found__bg {
+  position: fixed;
+  inset: 0;
+  background: url("/landing/bg-map.png") center / cover no-repeat;
+  filter: blur(6px) brightness(0.92);
+  z-index: 0;
+}
+
+.not-found__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 40px;
+  background: var(--color-glass-panel);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.08);
+}
+
+.not-found__title {
+  font-family: "Hornbill", Georgia, "Times New Roman", serif;
+  font-size: clamp(72px, 12vw, 120px);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.not-found__desc {
+  font-size: clamp(14px, 1.4vw, 18px);
+  color: var(--color-text-muted);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.not-found__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 590;
+  color: var(--color-bg);
+  background: var(--color-primary);
+  border: none;
+  border-radius: 220px;
+  text-decoration: none;
+  cursor:
+    url("/cursors/hover.png") 12 4,
+    pointer;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.not-found__btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px var(--color-primary-shadow);
+}
+
+.not-found__btn:active {
+  transform: scale(0.97);
+}
+
+.not-found__btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--color-bg);
+}
+
+/* Waitlist modal */
+.waitlist-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-overlay);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.waitlist-card {
+  position: relative;
+  background: var(--color-bg);
+  border-radius: 40px;
+  padding: 24px 24px;
+  width: min(360px, calc(100vw - 24px));
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.waitlist-card__x {
+  position: absolute;
+  top: 20px;
+  right: 28px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .waitlist-card {
+    width: calc(100vw - 32px);
+  }
+}
+
+.waitlist-card__title {
+  font-family: "Hornbill", Georgia, serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.waitlist-card__subtitle {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.waitlist-card__form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.waitlist-card__inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.waitlist-card__input {
+  width: 100%;
+  padding: 12px 20px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 220px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.waitlist-card__input:focus {
+  border-color: var(--color-text);
+}
+
+.waitlist-card__error {
+  font-size: 13px;
+  color: var(--color-error);
+}
+
+.waitlist-card__submit,
+.waitlist-card__done {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 220px;
+  background: var(--color-btn-primary-bg);
+  color: var(--color-btn-primary-text);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.waitlist-card__submit:hover,
+.waitlist-card__done:hover {
+  background: #333;
+}
+
+.waitlist-card__submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Landing footer nav links */
+.footer-bar__links {
+  display: flex;
+  gap: 20px;
+  pointer-events: auto;
+}
+
+.footer-bar__links a {
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.footer-bar__links a:hover {
+  opacity: 1;
+}
+
+/* ─── Scrollable page layout ─── */
+html.page-scrollable,
+html.page-scrollable body {
+  overflow: auto;
+  height: auto;
+}
+
+.page-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+.page-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 40px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.page-header__logo {
+  font-family: "Hornbill", Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.page-header__nav {
+  display: flex;
+  gap: 28px;
+}
+
+.page-header__link {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.page-header__link:hover {
+  opacity: 1;
+}
+
+.page-main {
+  flex: 1;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+/* Page sections */
+.page-section {
+  margin-bottom: 48px;
+}
+
+.page-section--highlight {
+  background: #f8f9fb;
+  border-radius: 20px;
+  padding: 40px 32px;
+}
+
+.page-title {
+  font-family: "Hornbill", Georgia, serif;
+  font-size: clamp(36px, 5vw, 52px);
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.page-section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* FAQ */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.faq-item {
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.faq-item--open {
+  border-color: var(--color-text);
+}
+
+.faq-item__q {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.faq-item__chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.faq-item--open .faq-item__chevron {
+  transform: rotate(180deg);
+}
+
+.faq-item__a {
+  padding: 0 20px 16px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+/* Support contact grid */
+.support-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.support-contact-card {
+  padding: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.support-contact-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.support-contact-card p {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.support-contact-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.support-contact-link:hover {
+  text-decoration: underline;
+}
+
+/* Support form */
+.support-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.support-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.support-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.support-form__field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.support-form__field input,
+.support-form__field textarea {
+  padding: 12px 16px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--color-text);
+  background: var(--color-bg);
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.support-form__field input:focus,
+.support-form__field textarea:focus {
+  border-color: var(--color-text);
+}
+
+.support-form-success {
+  text-align: center;
+  padding: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.support-form-success p {
+  font-size: 15px;
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 28px;
+  background: var(--color-btn-primary-bg);
+  color: var(--color-btn-primary-text);
+  border: none;
+  border-radius: 220px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  align-self: flex-start;
+}
+
+.page-btn:hover {
+  background: #333;
+}
+
+.page-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* About cards */
+.about-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.about-card {
+  padding: 24px;
+  background: var(--color-bg);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+}
+
+.about-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.about-card p {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+/* Legal content */
+.legal-content h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-top: 32px;
+  margin-bottom: 12px;
+}
+
+.legal-content h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+
+.legal-content p {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--color-text);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.legal-content ul {
+  list-style: disc;
+  padding-left: 24px;
+  margin-bottom: 12px;
+}
+
+.legal-content li {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--color-text);
+  line-height: 1.7;
+  margin-bottom: 6px;
+}
+
+.legal-content a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.legal-content a:hover {
+  text-decoration: underline;
+}
+
+/* Page footer */
+.page-footer {
+  background: #1a1a1a;
+  color: #fff;
+  padding: 48px 40px 24px;
+}
+
+.page-footer__inner {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.page-footer__brand {
+  max-width: 280px;
+}
+
+.page-footer__logo {
+  font-family: "Hornbill", Georgia, serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.page-footer__tagline {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+}
+
+.page-footer__links {
+  display: flex;
+  gap: 48px;
+}
+
+.page-footer__col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-footer__col h4 {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 4px;
+}
+
+.page-footer__col a {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.page-footer__col a:hover {
+  color: #fff;
+}
+
+.page-footer__bottom {
+  max-width: 800px;
+  margin: 0 auto;
+  padding-top: 20px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 400;
+}
+
+/* Responsive — pages */
+@media (max-width: 768px) {
+  .page-header {
+    padding: 14px 20px;
+  }
+
+  .page-header__logo {
+    font-size: 24px;
+  }
+
+  .page-header__nav {
+    gap: 16px;
+  }
+
+  .page-header__link {
+    font-size: 14px;
+  }
+
+  .page-main {
+    padding: 32px 20px 60px;
+  }
+
+  .support-contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .support-form__row {
+    grid-template-columns: 1fr;
+  }
+
+  .about-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .page-footer__inner {
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .page-footer__links {
+    flex-wrap: wrap;
+    gap: 32px;
+  }
+
+  .page-footer {
+    padding: 32px 20px 20px;
+  }
+
+  .footer-bar__links {
+    gap: 14px;
+  }
+
+  .page-section--highlight {
+    padding: 24px 20px;
+  }
 }
 
 /* Floating motion used by the QR claim flow's sticker + sparkles. The keyframes
    include a small X drift so the sparkles wander on/off the sticker rather than
    bobbing in lockstep — feels alive without distracting. */
 @keyframes float-slow {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0);
   }
   25% {
@@ -52,7 +1226,8 @@ html {
 }
 
 @keyframes float-fast {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0);
   }
   25% {

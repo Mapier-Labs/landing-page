@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useCallback, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import type { Character } from '@/lib/characters';
-import CharacterReveal from './CharacterReveal';
-import PhoneEntry from './PhoneEntry';
-import OtpVerify from './OtpVerify';
-import ClaimSuccess from './ClaimSuccess';
+import { useCallback, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import type { Character } from "@/lib/characters";
+import CharacterReveal from "./CharacterReveal";
+import PhoneEntry from "./PhoneEntry";
+import OtpVerify from "./OtpVerify";
+import ClaimSuccess from "./ClaimSuccess";
 
-type Step = 'reveal' | 'phone' | 'otp' | 'success';
+type Step = "reveal" | "phone" | "otp" | "success";
 
 interface ClaimFlowProps {
   character: Character;
@@ -20,12 +20,12 @@ interface ClaimFlowProps {
 // for visual QA. Production users always start at 'reveal'.
 function useInitialStep(): Step {
   const params = useSearchParams();
-  if (process.env.NODE_ENV !== 'development') return 'reveal';
-  const requested = params.get('step');
-  if (requested === 'phone' || requested === 'otp' || requested === 'success') {
+  if (process.env.NODE_ENV !== "development") return "reveal";
+  const requested = params.get("step");
+  if (requested === "phone" || requested === "otp" || requested === "success") {
     return requested;
   }
-  return 'reveal';
+  return "reveal";
 }
 
 export default function ClaimFlow({ character, posterId, posterToken }: ClaimFlowProps) {
@@ -33,38 +33,32 @@ export default function ClaimFlow({ character, posterId, posterToken }: ClaimFlo
   const [step, setStep] = useState<Step>(initial);
   // Phone is held in module state across steps so OTP verify can re-use it.
   // We keep tokens in component state only — never localStorage — per spec.
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState("");
   const [accessToken, setAccessToken] = useState<string | null>(null);
   // Character displayed on the success screen. Defaults to the URL slug, but
   // gets overridden when the backend returns ALREADY_CLAIMED so the user sees
   // their actual prior character, not the one they just tried to scan.
   const [displayCharacter, setDisplayCharacter] = useState<Character>(character);
 
-  const goToPhone = useCallback(() => setStep('phone'), []);
+  const goToPhone = useCallback(() => setStep("phone"), []);
   const goToOtp = useCallback((submittedPhone: string) => {
     setPhone(submittedPhone);
-    setStep('otp');
+    setStep("otp");
   }, []);
   const goToSuccess = useCallback((token: string, claimedAs: Character) => {
     setAccessToken(token);
     setDisplayCharacter(claimedAs);
-    setStep('success');
+    setStep("success");
   }, []);
-  const goBackToPhone = useCallback(() => setStep('phone'), []);
+  const goBackToPhone = useCallback(() => setStep("phone"), []);
 
-  if (step === 'reveal') {
+  if (step === "reveal") {
     return <CharacterReveal character={character} onContinue={goToPhone} />;
   }
-  if (step === 'phone') {
-    return (
-      <PhoneEntry
-        character={character}
-        initialPhone={phone}
-        onSubmitted={goToOtp}
-      />
-    );
+  if (step === "phone") {
+    return <PhoneEntry character={character} initialPhone={phone} onSubmitted={goToOtp} />;
   }
-  if (step === 'otp') {
+  if (step === "otp") {
     return (
       <OtpVerify
         character={character}

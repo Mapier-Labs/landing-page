@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import type { Character } from '@/lib/characters';
-import { HomeButton, PastelBackdrop, Sparkle } from './_shared';
+import Image from "next/image";
+import type { Character } from "@/lib/characters";
+import { HomeButton, PastelBackdrop, Sparkle } from "./_shared";
 
 interface ClaimSuccessProps {
   character: Character;
@@ -12,8 +12,8 @@ interface ClaimSuccessProps {
 }
 
 // TODO: replace with real App Store / Play Store URLs once the app is live.
-const APP_STORE_URL = 'https://apps.apple.com/app/idPLACEHOLDER';
-const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=ai.mapier.PLACEHOLDER';
+const APP_STORE_URL = "https://apps.apple.com/app/idPLACEHOLDER";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=ai.mapier.PLACEHOLDER";
 
 export default function ClaimSuccess({ character }: ClaimSuccessProps) {
   return (
