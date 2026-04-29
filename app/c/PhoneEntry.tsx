@@ -3,12 +3,12 @@
 import Image from "next/image";
 import { useState } from "react";
 import { ChevronRight, Loader2 } from "lucide-react";
-import type { Character } from "@/lib/characters";
 import { ApiError, requestOtp } from "@/lib/api";
 import { HomeButton, PastelBackdrop, Sparkle } from "./_shared";
 
 interface PhoneEntryProps {
-  character: Character;
+  /** Slug of the rolled character — used only to render the sticker thumbnail. */
+  characterSlug: string;
   initialPhone: string;
   onSubmitted: (phoneE164: string) => void;
 }
@@ -20,7 +20,7 @@ const COUNTRIES: readonly Country[] = [
   { code: "CN", dial: "+86", label: "China" },
 ];
 
-export default function PhoneEntry({ character, initialPhone, onSubmitted }: PhoneEntryProps) {
+export default function PhoneEntry({ characterSlug, initialPhone, onSubmitted }: PhoneEntryProps) {
   // Pre-fill from already-entered phone if user navigated back.
   const initialDial: "+1" | "+86" = initialPhone.startsWith("+86") ? "+86" : "+1";
   const initialLocal = initialPhone.startsWith(initialDial)
@@ -70,14 +70,16 @@ export default function PhoneEntry({ character, initialPhone, onSubmitted }: Pho
             <div className="absolute inset-0 z-10 flex items-center justify-center">
               <div className="animate-[float-slow_4.5s_ease-in-out_infinite]">
                 <div className="rotate-[12deg]">
-                  <Image
-                    src={`/characters/${character.slug}.png`}
-                    alt=""
-                    width={160}
-                    height={160}
-                    priority
-                    className="h-auto w-[160px] select-none drop-shadow-[0_10px_24px_rgba(0,0,0,0.2)]"
-                  />
+                  {characterSlug ? (
+                    <Image
+                      src={`/characters/${characterSlug}.png`}
+                      alt=""
+                      width={160}
+                      height={160}
+                      priority
+                      className="h-auto w-[160px] select-none drop-shadow-[0_10px_24px_rgba(0,0,0,0.2)]"
+                    />
+                  ) : null}
                 </div>
               </div>
             </div>

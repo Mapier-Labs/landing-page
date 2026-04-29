@@ -3,26 +3,29 @@
 import Image from "next/image";
 import { ChangeEvent, ClipboardEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { ChevronRight, Loader2 } from "lucide-react";
-import { type Character, getCharacter } from "@/lib/characters";
 import { ApiError, claimCharacter, extractExistingClaim, requestOtp, verifyOtp } from "@/lib/api";
 import { HomeButton, PastelBackdrop, Sparkle } from "./_shared";
+import { getPendingClaimToken } from "./ClaimFlow";
+import type { RevealCharacter } from "./CharacterReveal";
 
 interface OtpVerifyProps {
-  character: Character;
+  /** Slug of the rolled character — used only to render the sticker thumbnail. */
+  characterSlug: string;
   phone: string;
-  posterId?: string;
-  posterToken?: string;
-  onClaimed: (accessToken: string, claimedAs: Character) => void;
+  /**
+   * Called once the OTP is verified AND the character claim has resolved. The
+   * `claimedAs` payload is what the backend bound — may differ from the rolled
+   * character if the user already had a prior claim on another device.
+   */
+  onClaimed: (accessToken: string, claimedAs: RevealCharacter) => void;
   onChangePhone: () => void;
 }
 
 const CODE_LENGTH = 6;
 
 export default function OtpVerify({
-  character,
+  characterSlug,
   phone,
-  posterId,
-  posterToken,
   onClaimed,
   onChangePhone,
 }: OtpVerifyProps) {
@@ -103,24 +106,33 @@ export default function OtpVerify({
     try {
       const verifyRes = await verifyOtp(phone, code);
       const token = verifyRes.session.access_token;
+      // Send the pending claim token from the cookie so the backend binds the
+      // pre-rolled character to the now-authenticated user. Falls back to no
+      // token if the cookie was wiped — backend will return NO_PENDING_CLAIM
+      // unless the user already has a prior claim, in which case it surfaces
+      // it via ALREADY_CLAIMED.
+      const pendingToken = getPendingClaimToken() ?? undefined;
       try {
-        // Claim with the fresh token. Backend requires poster_id + poster_token;
-        // empty strings will be rejected (or bypassed only by local dev backends).
-        await claimCharacter({
-          characterSlug: character.slug,
-          posterId: posterId ?? "",
-          posterToken: posterToken ?? "",
-          source: "qr_poster",
+        const claim = await claimCharacter({
+          pendingToken,
           accessToken: token,
         });
-        onClaimed(token, character);
+        onClaimed(token, {
+          character_slug: claim.character_slug,
+          tier: claim.tier,
+          rarity_label: claim.rarity_label,
+        });
       } catch (claimErr) {
-        // ALREADY_CLAIMED: user has a prior character. Show that one on success.
+        // ALREADY_CLAIMED: user has a prior character on this phone. Surface
+        // it so the success screen shows their actual character.
         if (claimErr instanceof ApiError && claimErr.code === "ALREADY_CLAIMED") {
           const existing = extractExistingClaim(claimErr);
-          const existingChar = existing ? getCharacter(existing.character_slug) : undefined;
-          if (existingChar) {
-            onClaimed(token, existingChar);
+          if (existing) {
+            onClaimed(token, {
+              character_slug: existing.character_slug,
+              tier: existing.tier,
+              rarity_label: existing.rarity_label,
+            });
             return;
           }
         }
@@ -162,13 +174,15 @@ export default function OtpVerify({
             <div className="absolute inset-0 z-10 flex items-center justify-center">
               <div className="animate-[float-slow_4.5s_ease-in-out_infinite]">
                 <div className="rotate-[12deg]">
-                  <Image
-                    src={`/characters/${character.slug}.png`}
-                    alt=""
-                    width={160}
-                    height={160}
-                    className="h-auto w-[160px] select-none drop-shadow-[0_10px_24px_rgba(0,0,0,0.2)]"
-                  />
+                  {characterSlug ? (
+                    <Image
+                      src={`/characters/${characterSlug}.png`}
+                      alt=""
+                      width={160}
+                      height={160}
+                      className="h-auto w-[160px] select-none drop-shadow-[0_10px_24px_rgba(0,0,0,0.2)]"
+                    />
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -276,8 +290,11 @@ function messageForError(err: unknown): string {
     if (err.code === "RATE_LIMITED") {
       return "Too many attempts. Wait a minute, then try again.";
     }
-    if (err.code === "INVALID_SLUG") {
-      return "That character link looks broken. Try scanning the QR poster again.";
+    if (err.code === "INVALID_SLUG" || err.code === "INVALID_TOKEN") {
+      return "That QR link looks broken. Try scanning the poster again.";
+    }
+    if (err.code === "NO_PENDING_CLAIM") {
+      return "Your reveal expired. Tap home and rescan the poster to roll again.";
     }
     if (err.code === "INVALID_POSTER_TOKEN") {
       return "This QR poster link looks invalid. Scan the poster again or download Mapier directly.";
