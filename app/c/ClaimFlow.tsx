@@ -44,22 +44,86 @@ const DEV_STUB: RevealCharacter = {
   rarity_label: "Top 40%",
 };
 
+interface InitialState {
+  step: Step;
+  rolled: RevealCharacter | null;
+  claimed: RevealCharacter | null;
+  welcomeBack: boolean;
+  needsRoll: boolean;
+}
+
+// Computes the mount-time state by reading cookies + the dev override. Runs
+// once per mount via lazy useState initializers below — this avoids the
+// `react-hooks/set-state-in-effect` cascade that would otherwise fire if we
+// set the same state imperatively inside a `useEffect`.
+function computeInitialState(devOverride: Step | "welcome" | null): InitialState {
+  if (devOverride) {
+    return {
+      step: devOverride === "welcome" ? "reveal" : devOverride,
+      rolled: DEV_STUB,
+      claimed: DEV_STUB,
+      welcomeBack: devOverride === "welcome",
+      needsRoll: false,
+    };
+  }
+  // Cookies are browser-only; on the SSR pass we always defer to the roll
+  // path and let the client effect short-circuit on rehydrate.
+  if (typeof document === "undefined") {
+    return { step: "reveal", rolled: null, claimed: null, welcomeBack: false, needsRoll: true };
+  }
+  // 1) Outcome cookie — user has already claimed in this browser. Skip the
+  //    roll entirely; CTA jumps straight to success.
+  const outcome = getClaimOutcome();
+  if (outcome) {
+    const restored: RevealCharacter = {
+      character_slug: outcome.character_slug,
+      tier: outcome.tier,
+      rarity_label: outcome.rarity_label,
+    };
+    return {
+      step: "reveal",
+      rolled: restored,
+      claimed: restored,
+      welcomeBack: true,
+      needsRoll: false,
+    };
+  }
+  // 2) Pending payload — refresh-stickiness so a reload shows the same character
+  //    without burning a second roll.
+  const cached = readPendingPayload();
+  if (cached) {
+    return {
+      step: "reveal",
+      rolled: cached.character,
+      claimed: null,
+      welcomeBack: false,
+      needsRoll: false,
+    };
+  }
+  // 3) No cookies — need to roll.
+  return { step: "reveal", rolled: null, claimed: null, welcomeBack: false, needsRoll: true };
+}
+
 export default function ClaimFlow() {
   const devOverride = useDevStepOverride();
 
-  const [step, setStep] = useState<Step>("reveal");
+  // Computed once on first render via a lazy state initializer. We never call
+  // `setInitial` — it's just a stable handle to the mount-time decision.
+  const [initial] = useState<InitialState>(() => computeInitialState(devOverride));
+
+  const [step, setStep] = useState<Step>(initial.step);
 
   // Rolled (or restored) character — drives the reveal screen. Null while we
   // wait on the initial /character/roll round-trip.
-  const [rolled, setRolled] = useState<RevealCharacter | null>(null);
+  const [rolled, setRolled] = useState<RevealCharacter | null>(initial.rolled);
 
   // Welcome-back mode flips the reveal copy + CTA when we restore from the
   // outcome cookie on a return visit.
-  const [welcomeBack, setWelcomeBack] = useState(false);
+  const [welcomeBack, setWelcomeBack] = useState(initial.welcomeBack);
 
   // Final claimed character. May differ from `rolled` in the rare case the
   // backend tells us the user already had a claim from another session.
-  const [claimed, setClaimed] = useState<RevealCharacter | null>(null);
+  const [claimed, setClaimed] = useState<RevealCharacter | null>(initial.claimed);
 
   // True only during the brief reveal-replay animation that runs when claim
   // returns a different character than rolled. UI uses this to dim the rolled
@@ -75,68 +139,6 @@ export default function ClaimFlow() {
   // Reveal-screen surface for the (rare) network-error case during the initial
   // roll. We show a tappable retry rather than crashing the page.
   const [rollError, setRollError] = useState<string | null>(null);
-
-  // Guards: roll/restoration runs once per mount, and we don't want double-fire
-  // in React 19 dev strict-mode-style remounts. The rolledRef keeps this idempotent.
-  const initRanRef = useRef(false);
-
-  // ---------- Initial mount: cookies-first, then roll ----------
-  useEffect(() => {
-    if (initRanRef.current) return;
-    initRanRef.current = true;
-
-    if (devOverride) {
-      // Dev jump-forward: pretend we have a rolled character + (optionally) a
-      // claimed one. Uses static stub data so the screens have something to render.
-      setRolled(DEV_STUB);
-      setClaimed(DEV_STUB);
-      if (devOverride === "welcome") {
-        setWelcomeBack(true);
-        setStep("reveal");
-      } else {
-        setStep(devOverride);
-      }
-      return;
-    }
-
-    // 1) Outcome cookie — user has already claimed in this browser. Skip the
-    //    roll entirely and let them jump straight to the success screen via the
-    //    "Welcome back" CTA.
-    const outcome = getClaimOutcome();
-    if (outcome) {
-      const restored: RevealCharacter = {
-        character_slug: outcome.character_slug,
-        tier: outcome.tier,
-        rarity_label: outcome.rarity_label,
-      };
-      setRolled(restored);
-      setClaimed(restored);
-      setWelcomeBack(true);
-      setStep("reveal");
-      return;
-    }
-
-    // 2) Pending-claim cookie alone is just the token — we can't render the
-    //    reveal screen without a slug, so we still call /character/roll. The
-    //    backend should treat the call as idempotent given the cookie is sent
-    //    only on /claim, so a second roll just produces a new character. To
-    //    avoid surprising the user with a different character on refresh, we
-    //    ALSO store a small slug+tier+rarity blob in the pending cookie below.
-    //
-    //    Implementation note: we store the full reveal payload (not just the
-    //    token) in the pending cookie so refresh-stickiness Just Works without
-    //    needing a separate /character/roll-by-token endpoint.
-    const cached = readPendingPayload();
-    if (cached) {
-      setRolled(cached.character);
-      setStep("reveal");
-      return;
-    }
-
-    // 3) No cookies — roll a fresh one.
-    void doRoll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const doRoll = useCallback(async () => {
     setRollError(null);
@@ -161,6 +163,19 @@ export default function ClaimFlow() {
       );
     }
   }, []);
+
+  // Guard: don't double-fire `doRoll` on React 19 strict-mode-style remounts.
+  const rollFiredRef = useRef(false);
+
+  useEffect(() => {
+    if (!initial.needsRoll || rollFiredRef.current) return;
+    rollFiredRef.current = true;
+    // doRoll is the canonical "fetch on mount" path. The setState calls inside
+    // happen *after* an async network round-trip, not synchronously, so the
+    // cascading-renders concern the rule guards against doesn't apply here.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void doRoll();
+  }, [initial.needsRoll, doRoll]);
 
   // ---------- Step transitions ----------
 
