@@ -6,7 +6,7 @@ export async function GET() {
       apps: [],
       details: [
         {
-          appID: "FT3A737KDZ.ai.mapier",
+          appID: "HV58968J2R.ai.mapier.app",
           paths: ["/share/post/*", "/share/profile/*"],
         },
       ],
