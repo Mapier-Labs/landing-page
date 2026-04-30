@@ -1,29 +1,83 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
+// Accepts either {email, name} (home-page form) or {phone} (QR claim flow).
+// The waitlist Postgres table has a CHECK constraint requiring at least one
+// identifier, so server-side validation here mirrors that.
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, name } = body;
+    const rawEmail = typeof body.email === "string" ? body.email.trim() : "";
+    const rawName = typeof body.name === "string" ? body.name.trim() : "";
+    const rawPhone = typeof body.phone === "string" ? body.phone.trim() : "";
 
-    if (!email || !name) {
-      return NextResponse.json({ error: "Email and name are required" }, { status: 400 });
+    const hasEmailEntry = rawEmail !== "" || rawName !== "";
+    const hasPhoneEntry = rawPhone !== "";
+
+    if (!hasEmailEntry && !hasPhoneEntry) {
+      return NextResponse.json(
+        { error: "Provide either an email + name, or a phone number." },
+        { status: 400 }
+      );
     }
 
-    // Validate email format
+    // Phone-only path (QR claim flow).
+    if (hasPhoneEntry && !hasEmailEntry) {
+      // Loose E.164 check — leading +, then 8–15 digits.
+      if (!/^\+\d{8,15}$/.test(rawPhone)) {
+        return NextResponse.json({ error: "Invalid phone number format." }, { status: 400 });
+      }
+
+      const { error } = await supabase.from("waitlist").insert({ phone: rawPhone });
+
+      if (error) {
+        // Already on the waitlist via the same phone — treat as success so the
+        // QR flow doesn't fail the user on a re-scan.
+        if (error.code === "23505") {
+          return NextResponse.json(
+            { success: true, message: "Already on the waitlist." },
+            { status: 200 }
+          );
+        }
+        // Migration not yet live (column missing) — log and degrade to no-op so
+        // the QR flow doesn't break in the gap between this code shipping and
+        // the backend migration landing on prod.
+        if (error.code === "42703" || error.code === "23502") {
+          console.warn("Waitlist phone column not ready, skipping insert:", error.message);
+          return NextResponse.json(
+            { success: true, message: "Skipped (schema pending)." },
+            { status: 200 }
+          );
+        }
+        console.error("Supabase insert error (phone):", error);
+        return NextResponse.json({ error: "Failed to join waitlist" }, { status: 500 });
+      }
+
+      console.log("Waitlist signup (phone):", {
+        phone: rawPhone,
+        timestamp: new Date().toISOString(),
+      });
+      return NextResponse.json(
+        { success: true, message: "Successfully joined the waitlist!" },
+        { status: 200 }
+      );
+    }
+
+    // Email path (home-page form) — keep prior contract.
+    if (!rawEmail || !rawName) {
+      return NextResponse.json({ error: "Email and name are required" }, { status: 400 });
+    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(rawEmail)) {
       return NextResponse.json({ error: "Please enter a valid email address" }, { status: 400 });
     }
 
-    // Insert into Supabase waitlist table
     const { error } = await supabase.from("waitlist").insert({
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
+      name: rawName,
+      email: rawEmail.toLowerCase(),
     });
 
     if (error) {
-      // Handle duplicate email (unique constraint violation)
       if (error.code === "23505") {
         return NextResponse.json(
           { error: "This email is already on the waitlist!" },
@@ -34,8 +88,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to join waitlist" }, { status: 500 });
     }
 
-    console.log("Waitlist signup:", { email, name, timestamp: new Date().toISOString() });
-
+    console.log("Waitlist signup (email):", {
+      email: rawEmail,
+      name: rawName,
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json(
       { success: true, message: "Successfully joined the waitlist!" },
       { status: 200 }

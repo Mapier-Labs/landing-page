@@ -209,6 +209,19 @@ export default function ClaimFlow() {
       // Pending cookie is single-use; clear it now that the claim succeeded.
       clearPendingClaim();
 
+      // Mirror the phone into the public `waitlist` table so QR claimers show up
+      // alongside home-page email signups. Fire-and-forget — the user already
+      // has their character; a waitlist failure here shouldn't block them.
+      if (phone) {
+        void fetch("/api/waitlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone }),
+        }).catch((err) => {
+          console.warn("Waitlist mirror failed (non-blocking):", err);
+        });
+      }
+
       // Did the server hand us back a different character than we rolled?
       // That happens when this phone already had a prior claim on another
       // device/browser. Run the reveal-replay UX described in the spec before
@@ -235,7 +248,7 @@ export default function ClaimFlow() {
       setClaimed(claimedAs);
       setStep("success");
     },
-    [rolled]
+    [rolled, phone]
   );
 
   // ---------- Render ----------

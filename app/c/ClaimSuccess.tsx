@@ -82,7 +82,7 @@ export default function ClaimSuccess({ character }: ClaimSuccessProps) {
             You&apos;re on the waitlist.
           </p>
           <p className="max-w-[320px] font-nunito text-[14px] font-medium leading-5 text-[#131311]">
-            We&apos;ll text you when Mapier is approved by Apple. Your {name} is saved to your
+            We&apos;ll text you when you&apos;re off the waitlist. Your {name} is saved to your
             account.
           </p>
         </div>
