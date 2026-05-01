@@ -11,6 +11,8 @@ export type ApiErrorCode =
   | "INVALID_SLUG"
   | "INVALID_POSTER_TOKEN"
   | "ALREADY_CLAIMED"
+  | "NO_PENDING_CLAIM"
+  | "INVALID_TOKEN"
   | "VALIDATION_ERROR"
   | "UNAUTHORIZED"
   | "NETWORK_ERROR"
@@ -129,13 +131,30 @@ export function verifyOtp(phone: string, code: string): Promise<VerifyOtpRespons
   return postJson<VerifyOtpResponse>("/auth/verify-otp", { phone, code });
 }
 
+// ---------- /character/roll ----------
+
+// Anonymous reveal call. The backend rolls a random character, signs a
+// short-lived `pending_token`, and returns the slug + tier + rarity for the UI
+// to display. The token is later POSTed back to /character/claim once the user
+// authenticates so the server can bind the rolled character to their account.
+export interface RollCharacterResponse {
+  character_slug: string;
+  tier: string;
+  rarity_label: string;
+  pending_token: string;
+}
+
+export function rollCharacter(): Promise<RollCharacterResponse> {
+  return postJson<RollCharacterResponse>("/character/roll", {});
+}
+
 // ---------- /character/claim ----------
 
 export interface ClaimCharacterArgs {
-  characterSlug: string;
-  posterId: string;
-  posterToken: string;
-  source?: string;
+  // Optional: pending_token from a prior /character/roll call. The backend
+  // looks this up to determine which character to bind. If the user has no
+  // pending claim and no prior claim, the call returns NO_PENDING_CLAIM.
+  pendingToken?: string;
   accessToken: string;
 }
 
@@ -157,20 +176,12 @@ export interface ExistingClaim {
 }
 
 export function claimCharacter({
-  characterSlug,
-  posterId,
-  posterToken,
-  source,
+  pendingToken,
   accessToken,
 }: ClaimCharacterArgs): Promise<ClaimCharacterResponse> {
   return postJson<ClaimCharacterResponse>(
     "/character/claim",
-    {
-      character_slug: characterSlug,
-      poster_id: posterId,
-      poster_token: posterToken,
-      ...(source ? { source } : {}),
-    },
+    pendingToken ? { pending_token: pendingToken } : {},
     { authToken: accessToken }
   );
 }

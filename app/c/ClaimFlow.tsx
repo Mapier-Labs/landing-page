@@ -1,0 +1,381 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { ApiError, rollCharacter } from "@/lib/api";
+import {
+  ClaimOutcome,
+  clearPendingClaim,
+  getClaimOutcome,
+  getPendingClaim,
+  setClaimOutcome,
+  setPendingClaim,
+} from "@/lib/cookies";
+import CharacterReveal, { RevealCharacter } from "./CharacterReveal";
+import PhoneEntry from "./PhoneEntry";
+import OtpVerify from "./OtpVerify";
+import ClaimSuccess from "./ClaimSuccess";
+
+type Step = "reveal" | "phone" | "otp" | "success";
+
+// Dev-only step override: in development, ?step=phone|otp|success jumps the flow
+// forward for visual QA. Production users always start at 'reveal'. We also
+// accept ?step=welcome to force the returning-user reveal copy.
+function useDevStepOverride(): Step | "welcome" | null {
+  const params = useSearchParams();
+  if (process.env.NODE_ENV !== "development") return null;
+  const requested = params.get("step");
+  if (
+    requested === "phone" ||
+    requested === "otp" ||
+    requested === "success" ||
+    requested === "welcome"
+  ) {
+    return requested;
+  }
+  return null;
+}
+
+// Stub data for dev-mode jump-forward QA — never seen in production because
+// the override is gated on NODE_ENV.
+const DEV_STUB: RevealCharacter = {
+  character_slug: "cat",
+  tier: "C",
+  rarity_label: "Top 40%",
+};
+
+interface InitialState {
+  step: Step;
+  rolled: RevealCharacter | null;
+  claimed: RevealCharacter | null;
+  welcomeBack: boolean;
+  needsRoll: boolean;
+}
+
+// Computes the mount-time state by reading cookies + the dev override. Runs
+// once per mount via lazy useState initializers below — this avoids the
+// `react-hooks/set-state-in-effect` cascade that would otherwise fire if we
+// set the same state imperatively inside a `useEffect`.
+function computeInitialState(devOverride: Step | "welcome" | null): InitialState {
+  if (devOverride) {
+    return {
+      step: devOverride === "welcome" ? "reveal" : devOverride,
+      rolled: DEV_STUB,
+      claimed: DEV_STUB,
+      welcomeBack: devOverride === "welcome",
+      needsRoll: false,
+    };
+  }
+  // Cookies are browser-only; on the SSR pass we always defer to the roll
+  // path and let the client effect short-circuit on rehydrate.
+  if (typeof document === "undefined") {
+    return { step: "reveal", rolled: null, claimed: null, welcomeBack: false, needsRoll: true };
+  }
+  // 1) Outcome cookie — user has already claimed in this browser. Skip the
+  //    roll entirely; CTA jumps straight to success.
+  const outcome = getClaimOutcome();
+  if (outcome) {
+    const restored: RevealCharacter = {
+      character_slug: outcome.character_slug,
+      tier: outcome.tier,
+      rarity_label: outcome.rarity_label,
+    };
+    return {
+      step: "reveal",
+      rolled: restored,
+      claimed: restored,
+      welcomeBack: true,
+      needsRoll: false,
+    };
+  }
+  // 2) Pending payload — refresh-stickiness so a reload shows the same character
+  //    without burning a second roll.
+  const cached = readPendingPayload();
+  if (cached) {
+    return {
+      step: "reveal",
+      rolled: cached.character,
+      claimed: null,
+      welcomeBack: false,
+      needsRoll: false,
+    };
+  }
+  // 3) No cookies — need to roll.
+  return { step: "reveal", rolled: null, claimed: null, welcomeBack: false, needsRoll: true };
+}
+
+export default function ClaimFlow() {
+  const devOverride = useDevStepOverride();
+
+  // Computed once on first render via a lazy state initializer. We never call
+  // `setInitial` — it's just a stable handle to the mount-time decision.
+  const [initial] = useState<InitialState>(() => computeInitialState(devOverride));
+
+  const [step, setStep] = useState<Step>(initial.step);
+
+  // Rolled (or restored) character — drives the reveal screen. Null while we
+  // wait on the initial /character/roll round-trip.
+  const [rolled, setRolled] = useState<RevealCharacter | null>(initial.rolled);
+
+  // Welcome-back mode flips the reveal copy + CTA when we restore from the
+  // outcome cookie on a return visit.
+  const [welcomeBack, setWelcomeBack] = useState(initial.welcomeBack);
+
+  // Final claimed character. May differ from `rolled` in the rare case the
+  // backend tells us the user already had a claim from another session.
+  const [claimed, setClaimed] = useState<RevealCharacter | null>(initial.claimed);
+
+  // True only during the brief reveal-replay animation that runs when claim
+  // returns a different character than rolled. UI uses this to dim the rolled
+  // sticker briefly before swapping in the actual one.
+  const [isCorrecting, setIsCorrecting] = useState(false);
+
+  // Claim flow state held between OTP verify and /character/claim. We cache the
+  // session token so we can include it on the success screen for future deep
+  // links.
+  const [phone, setPhone] = useState("");
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  // Reveal-screen surface for the (rare) network-error case during the initial
+  // roll. We show a tappable retry rather than crashing the page.
+  const [rollError, setRollError] = useState<string | null>(null);
+
+  const doRoll = useCallback(async () => {
+    setRollError(null);
+    try {
+      const res = await rollCharacter();
+      const character: RevealCharacter = {
+        character_slug: res.character_slug,
+        tier: res.tier,
+        rarity_label: res.rarity_label,
+      };
+      // Persist both the token (for /claim) and the reveal payload (so refresh
+      // shows the same character without burning another roll).
+      writePendingPayload(res.pending_token, character);
+      setRolled(character);
+    } catch (err) {
+      setRollError(
+        err instanceof ApiError
+          ? err.code === "NETWORK_ERROR"
+            ? "Network hiccup. Check your connection and try again."
+            : err.message
+          : "Couldn't reveal your character. Try again in a moment."
+      );
+    }
+  }, []);
+
+  // Guard: don't double-fire `doRoll` on React 19 strict-mode-style remounts.
+  const rollFiredRef = useRef(false);
+
+  useEffect(() => {
+    if (!initial.needsRoll || rollFiredRef.current) return;
+    rollFiredRef.current = true;
+    // doRoll is the canonical "fetch on mount" path. The setState calls inside
+    // happen *after* an async network round-trip, not synchronously, so the
+    // cascading-renders concern the rule guards against doesn't apply here.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void doRoll();
+  }, [initial.needsRoll, doRoll]);
+
+  // ---------- Step transitions ----------
+
+  const goToPhone = useCallback(() => setStep("phone"), []);
+
+  // Welcome-back path: outcome cookie present → jump straight to success.
+  const goToSuccessFromWelcome = useCallback(() => {
+    setStep("success");
+  }, []);
+
+  const goToOtp = useCallback((submittedPhone: string) => {
+    setPhone(submittedPhone);
+    setStep("otp");
+  }, []);
+
+  const goBackToPhone = useCallback(() => setStep("phone"), []);
+
+  const handleClaimed = useCallback(
+    async (token: string, claimedAs: RevealCharacter) => {
+      setAccessToken(token);
+
+      const claimedAtIso = new Date().toISOString();
+      const outcome: ClaimOutcome = {
+        character_slug: claimedAs.character_slug,
+        tier: claimedAs.tier,
+        rarity_label: claimedAs.rarity_label,
+        claimed_at: claimedAtIso,
+      };
+      // Persist the outcome so a return visit short-circuits the flow.
+      setClaimOutcome(outcome);
+      // Pending cookie is single-use; clear it now that the claim succeeded.
+      clearPendingClaim();
+
+      // Mirror the phone into the public `waitlist` table so QR claimers show up
+      // alongside home-page email signups. Fire-and-forget — the user already
+      // has their character; a waitlist failure here shouldn't block them.
+      if (phone) {
+        void fetch("/api/waitlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone }),
+        }).catch((err) => {
+          console.warn("Waitlist mirror failed (non-blocking):", err);
+        });
+      }
+
+      // Did the server hand us back a different character than we rolled?
+      // That happens when this phone already had a prior claim on another
+      // device/browser. Run the reveal-replay UX described in the spec before
+      // dropping the user on the success screen.
+      const rolledSlug = rolled?.character_slug;
+      const isCorrection = rolledSlug && rolledSlug !== claimedAs.character_slug;
+
+      if (isCorrection) {
+        // Dim, swap, briefly hold "Welcome back", then advance.
+        setIsCorrecting(true);
+        // Brief beat to let the user notice the dim.
+        await sleep(450);
+        setRolled(claimedAs);
+        setWelcomeBack(true);
+        setClaimed(claimedAs);
+        setStep("reveal");
+        // Hold the corrected reveal for a moment, then advance to success.
+        await sleep(1600);
+        setIsCorrecting(false);
+        setStep("success");
+        return;
+      }
+
+      setClaimed(claimedAs);
+      setStep("success");
+    },
+    [rolled, phone]
+  );
+
+  // ---------- Render ----------
+
+  if (step === "reveal") {
+    // Initial loading state — first roll hasn't returned yet.
+    if (!rolled) {
+      return (
+        <main className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-white">
+          <div className="text-center">
+            {rollError ? (
+              <>
+                <p className="mx-auto max-w-xs px-6 text-center font-nunito text-base font-bold text-[#131311]">
+                  {rollError}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void doRoll()}
+                  className="mt-6 rounded-full bg-[#131311] px-6 py-3 font-nunito text-base font-bold text-white transition-colors hover:bg-black"
+                >
+                  Try again
+                </button>
+              </>
+            ) : (
+              <p className="font-nunito text-base font-bold text-[#797876]">Revealing…</p>
+            )}
+          </div>
+        </main>
+      );
+    }
+
+    return (
+      <div className={isCorrecting ? "transition-opacity duration-300 opacity-40" : undefined}>
+        <CharacterReveal
+          character={rolled}
+          welcomeBack={welcomeBack}
+          onContinue={welcomeBack ? goToSuccessFromWelcome : goToPhone}
+        />
+      </div>
+    );
+  }
+
+  if (step === "phone") {
+    return (
+      <PhoneEntry
+        characterSlug={rolled?.character_slug ?? ""}
+        initialPhone={phone}
+        onSubmitted={goToOtp}
+      />
+    );
+  }
+
+  if (step === "otp") {
+    return (
+      <OtpVerify
+        characterSlug={rolled?.character_slug ?? ""}
+        phone={phone}
+        onClaimed={handleClaimed}
+        onChangePhone={goBackToPhone}
+      />
+    );
+  }
+
+  // success
+  return <ClaimSuccess character={claimed ?? rolled ?? DEV_STUB} accessToken={accessToken} />;
+}
+
+// ---------- Pending-claim cookie payload ----------
+//
+// The cookie value is JSON-encoded so we can store the token + the reveal
+// blob together — same cookie name, same TTL. We only fall back to a bare
+// token if a previous version of the app wrote one before this code shipped.
+//
+// The token is the only field the backend cares about on /claim; the
+// character payload is purely for the UI to render a sticky reveal across
+// refreshes without burning another roll.
+
+interface PendingPayload {
+  token: string;
+  character: RevealCharacter;
+}
+
+function readPendingPayload(): PendingPayload | null {
+  const raw = getPendingClaim();
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<PendingPayload>;
+    if (
+      parsed &&
+      typeof parsed.token === "string" &&
+      parsed.character &&
+      typeof parsed.character === "object"
+    ) {
+      const c = parsed.character as Partial<RevealCharacter>;
+      if (
+        typeof c.character_slug === "string" &&
+        typeof c.tier === "string" &&
+        typeof c.rarity_label === "string"
+      ) {
+        return {
+          token: parsed.token,
+          character: {
+            character_slug: c.character_slug,
+            tier: c.tier,
+            rarity_label: c.rarity_label,
+          },
+        };
+      }
+    }
+  } catch {
+    // Legacy format — pre-JSON token. Drop it; we'll re-roll cleanly.
+  }
+  return null;
+}
+
+function writePendingPayload(token: string, character: RevealCharacter): void {
+  const payload: PendingPayload = { token, character };
+  setPendingClaim(JSON.stringify(payload));
+}
+
+// Token-only accessor for the claim call. Reads the same cookie used for
+// the reveal so we keep the source-of-truth in one place.
+export function getPendingClaimToken(): string | null {
+  const cached = readPendingPayload();
+  return cached?.token ?? null;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

@@ -1,21 +1,29 @@
 "use client";
 
 import Image from "next/image";
-import type { Character } from "@/lib/characters";
+import { getCharacter } from "@/lib/characters";
 import { HomeButton, PastelBackdrop, Sparkle } from "./_shared";
+import type { RevealCharacter } from "./CharacterReveal";
 
 interface ClaimSuccessProps {
-  character: Character;
+  character: RevealCharacter;
   // Reserved for future use (e.g. deep-linking the app with a session). Kept
   // in props so we don't drop it from the flow contract.
   accessToken: string | null;
 }
 
-// TODO: replace with real App Store / Play Store URLs once the app is live.
-const APP_STORE_URL = "https://apps.apple.com/app/idPLACEHOLDER";
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=ai.mapier.PLACEHOLDER";
+// Falls back to a humanized slug if the slug isn't in our local copy table.
+function displayName(slug: string): string {
+  const known = getCharacter(slug);
+  if (known) return known.name;
+  return slug
+    .split("-")
+    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : ""))
+    .join(" ");
+}
 
 export default function ClaimSuccess({ character }: ClaimSuccessProps) {
+  const name = displayName(character.character_slug);
   return (
     <main className="relative min-h-[100dvh] overflow-hidden bg-white">
       <PastelBackdrop />
@@ -28,7 +36,7 @@ export default function ClaimSuccess({ character }: ClaimSuccessProps) {
             You&apos;ve claimed
           </p>
           <h1 className="mt-4 font-display text-[40px] font-black leading-[42px] tracking-[-2px] text-[#131311] -rotate-[5.75deg] whitespace-nowrap [paint-order:stroke] [-webkit-text-stroke:4px_white] [text-shadow:0_0_32px_rgba(0,0,0,0.10)]">
-            {character.name}!
+            {name}!
           </h1>
 
           {/* Tier + rarity pills */}
@@ -37,7 +45,7 @@ export default function ClaimSuccess({ character }: ClaimSuccessProps) {
               {character.tier}
             </span>
             <span className="rounded-full bg-white px-3 py-2 font-nunito text-[14px] font-medium leading-4 text-[#131311] shadow-[0_0_20px_rgba(0,0,0,0.12)]">
-              {character.rarityLabel}
+              {character.rarity_label}
             </span>
           </div>
         </div>
@@ -48,8 +56,8 @@ export default function ClaimSuccess({ character }: ClaimSuccessProps) {
             <div className="animate-[float-slow_4.5s_ease-in-out_infinite]">
               <div className="rotate-[18.97deg]">
                 <Image
-                  src={`/characters/${character.slug}.png`}
-                  alt={character.name}
+                  src={`/characters/${character.character_slug}.png`}
+                  alt={name}
                   width={280}
                   height={280}
                   priority
@@ -66,30 +74,23 @@ export default function ClaimSuccess({ character }: ClaimSuccessProps) {
           </div>
         </div>
 
-        {/* Tagline — Nunito Medium 14, matches reveal step */}
-        <p className="mx-auto mt-8 max-w-xs text-center font-nunito text-[14px] font-medium leading-5 text-[#131311]">
-          Open Mapier to meet your character and start exploring.
-        </p>
-
-        {/* Two CTAs at bottom (App Store + Play Store) */}
-        <div className="mx-auto mt-auto flex w-full max-w-[362px] flex-col gap-3 pt-12 pb-6">
-          <a
-            href={APP_STORE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex w-full items-center justify-center rounded-full bg-[#131311] px-[18px] py-3 font-nunito text-[16px] font-bold tracking-[-0.24px] text-white transition-colors hover:bg-black"
-          >
-            Get Mapier on App Store
-          </a>
-          <a
-            href={PLAY_STORE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex w-full items-center justify-center rounded-full bg-white px-[18px] py-3 font-nunito text-[16px] font-bold tracking-[-0.24px] text-[#131311] shadow-[0_0_20px_rgba(0,0,0,0.12)] transition-colors hover:bg-gray-50"
-          >
-            Get on Google Play
-          </a>
+        {/* Waitlist copy — replaces the old App Store / Play Store CTAs while we
+            wait for App Review approval. The character is already saved
+            server-side; the user has nothing to do but wait. */}
+        <div className="mx-auto mt-10 flex w-full max-w-[362px] flex-col items-center gap-3 text-center">
+          <p className="font-display text-[24px] font-black leading-[28px] tracking-[-1.2px] text-[#131311] [paint-order:stroke] [-webkit-text-stroke:3px_white] [text-shadow:0_0_24px_rgba(0,0,0,0.08)]">
+            You&apos;re on the waitlist.
+          </p>
+          <p className="max-w-[320px] font-nunito text-[14px] font-medium leading-5 text-[#131311]">
+            We&apos;ll text you when you&apos;re off the waitlist. Your {name} is saved to your
+            account.
+          </p>
         </div>
+
+        {/* Bottom spacer keeps the waitlist block centered between the sticker
+            and the safe-area inset, matching the breathing room of the old
+            two-button stack. */}
+        <div className="mt-auto pb-6" />
       </div>
     </main>
   );
