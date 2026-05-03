@@ -112,9 +112,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${nunito.className} ${nunito.variable} antialiased`}>
-        {children}
-      </body>
+      <body className={`${nunito.className} ${nunito.variable} antialiased`}>{children}</body>
     </html>
   );
 }

@@ -44,13 +44,7 @@ export function HomeButton() {
  * `size` accepts a number (px) or any CSS length string (e.g. `"clamp(...)"`)
  * so the sparkle can scale responsively alongside the sticker.
  */
-export function Sparkle({
-  size = 64,
-  className,
-}: {
-  size?: number | string;
-  className?: string;
-}) {
+export function Sparkle({ size = 64, className }: { size?: number | string; className?: string }) {
   return (
     <svg
       viewBox="0 0 146 146"
