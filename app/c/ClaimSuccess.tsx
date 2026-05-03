@@ -1,9 +1,12 @@
 "use client";
 
+import { Instagram } from "lucide-react";
 import Image from "next/image";
 import { getCharacter } from "@/lib/characters";
 import { HomeButton, PastelBackdrop, Sparkle } from "./_shared";
 import type { RevealCharacter } from "./CharacterReveal";
+
+const INSTAGRAM_URL = "https://www.instagram.com/mapierapp/";
 
 interface ClaimSuccessProps {
   character: RevealCharacter;
@@ -85,6 +88,19 @@ export default function ClaimSuccess({ character }: ClaimSuccessProps) {
             We&apos;ll text you when you&apos;re off the waitlist. Your {name} is saved to your
             account.
           </p>
+
+          {/* Instagram CTA — keeps users engaged with Mapier between the
+              waitlist sign-up and the eventual SMS invite. Outbound link,
+              opens in a new tab so the success screen stays accessible. */}
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#131311] px-[18px] py-3 font-nunito text-[16px] font-bold tracking-[-0.24px] text-white transition-colors hover:bg-black"
+          >
+            <Instagram size={20} strokeWidth={2.25} />
+            Follow us on Instagram
+          </a>
         </div>
 
         {/* Bottom spacer keeps the waitlist block centered between the sticker
