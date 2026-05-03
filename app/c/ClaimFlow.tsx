@@ -177,6 +177,19 @@ export default function ClaimFlow() {
     void doRoll();
   }, [initial.needsRoll, doRoll]);
 
+  // Opt this route into vertical scrolling. globals.css line 51 sets
+  // `html, body { overflow: hidden }` so the home page's drag UX can lock
+  // scroll, then releases it via the `page-scrollable` class on <html>
+  // (line 720). The QR flow needs scroll on smaller phones where the CTA
+  // sits below the iOS Safari toolbar; without this the user is stuck at
+  // the reveal screen and can't reach "Claim Your character".
+  useEffect(() => {
+    document.documentElement.classList.add("page-scrollable");
+    return () => {
+      document.documentElement.classList.remove("page-scrollable");
+    };
+  }, []);
+
   // ---------- Step transitions ----------
 
   const goToPhone = useCallback(() => setStep("phone"), []);
