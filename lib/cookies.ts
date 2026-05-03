@@ -1,11 +1,13 @@
-// Tiny browser-cookie helper. We avoid pulling in `js-cookie` since this is
-// the only place we touch document.cookie and the surface is small.
+// QR-flow client-side state.
 //
-// Both QR-flow cookies are intentionally NOT HttpOnly: the pending token is
-// echoed back into the /character/claim request body, and the outcome cookie
-// is read by the client to short-circuit the reveal flow on return visits.
-// SameSite=Lax keeps them out of cross-site requests while still letting the
-// /c page read them on a fresh load from a scanned QR link.
+// Despite the filename, the QR-claim helpers below are backed by localStorage,
+// not cookies. JS-set cookies (`document.cookie`) get purged by iOS Safari's
+// ITP heuristics in the QR-from-Camera handoff path, which caused the reveal
+// flow to re-roll a different character on refresh. localStorage is not
+// subject to those heuristics. The generic cookie helpers (`setCookie`,
+// `getCookie`, `deleteCookie`) are kept for any future caller and used as a
+// read-side fallback so users who already have a pre-fix cookie set don't
+// lose their pending claim during rollout.
 
 export interface CookieOptions {
   /** Lifetime in seconds. Falls back to a session cookie if omitted. */
@@ -59,13 +61,61 @@ export function deleteCookie(name: string, path: string = "/"): void {
   document.cookie = `${name}=; Path=${path}; Max-Age=0; SameSite=Lax`;
 }
 
-// ---------- QR-flow cookie names + helpers ----------
+// ---------- localStorage envelope (TTL via wrapper) ----------
 
+interface StoredEnvelope {
+  v: string;
+  /** epoch ms; absent = no expiry */
+  exp?: number;
+}
+
+function lsSet(key: string, value: string, ttlSeconds?: number): void {
+  if (typeof window === "undefined") return;
+  try {
+    const envelope: StoredEnvelope = { v: value };
+    if (typeof ttlSeconds === "number") {
+      envelope.exp = Date.now() + Math.max(0, ttlSeconds) * 1000;
+    }
+    window.localStorage.setItem(key, JSON.stringify(envelope));
+  } catch {
+    // localStorage can throw under quota / private mode — fail silently.
+  }
+}
+
+function lsGet(key: string): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+    const envelope = JSON.parse(raw) as Partial<StoredEnvelope>;
+    if (!envelope || typeof envelope.v !== "string") return null;
+    if (typeof envelope.exp === "number" && Date.now() >= envelope.exp) {
+      window.localStorage.removeItem(key);
+      return null;
+    }
+    return envelope.v;
+  } catch {
+    return null;
+  }
+}
+
+function lsDel(key: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // ignore
+  }
+}
+
+// ---------- QR-flow keys + helpers ----------
+
+// Names retained as PENDING_CLAIM_COOKIE / CLAIM_OUTCOME_COOKIE for backward
+// compatibility with any imports; they double as the localStorage keys.
 export const PENDING_CLAIM_COOKIE = "mapier_pending_claim";
 export const CLAIM_OUTCOME_COOKIE = "mapier_claim_outcome";
 
 const HOUR = 60 * 60;
-const YEAR = 365 * 24 * HOUR;
 
 export interface ClaimOutcome {
   character_slug: string;
@@ -75,23 +125,28 @@ export interface ClaimOutcome {
 }
 
 export function setPendingClaim(token: string): void {
-  setCookie(PENDING_CLAIM_COOKIE, token, { maxAgeSeconds: HOUR });
+  lsSet(PENDING_CLAIM_COOKIE, token, HOUR);
 }
 
 export function getPendingClaim(): string | null {
-  return getCookie(PENDING_CLAIM_COOKIE);
+  // Prefer localStorage. Fall back to any legacy cookie value so users who
+  // were already mid-flow before this rollout don't lose their pending claim.
+  return lsGet(PENDING_CLAIM_COOKIE) ?? getCookie(PENDING_CLAIM_COOKIE);
 }
 
 export function clearPendingClaim(): void {
+  lsDel(PENDING_CLAIM_COOKIE);
+  // Also clear the legacy cookie if present so it doesn't shadow future state.
   deleteCookie(PENDING_CLAIM_COOKIE);
 }
 
 export function setClaimOutcome(outcome: ClaimOutcome): void {
-  setCookie(CLAIM_OUTCOME_COOKIE, JSON.stringify(outcome), { maxAgeSeconds: YEAR });
+  // No TTL — the outcome is a permanent record of the user's claim.
+  lsSet(CLAIM_OUTCOME_COOKIE, JSON.stringify(outcome));
 }
 
 export function getClaimOutcome(): ClaimOutcome | null {
-  const raw = getCookie(CLAIM_OUTCOME_COOKIE);
+  const raw = lsGet(CLAIM_OUTCOME_COOKIE) ?? getCookie(CLAIM_OUTCOME_COOKIE);
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as Partial<ClaimOutcome>;
