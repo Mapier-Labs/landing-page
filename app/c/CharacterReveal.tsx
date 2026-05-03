@@ -56,7 +56,7 @@ export default function CharacterReveal({
   const button = ctaLabel ?? (welcomeBack ? "View Your Status" : "Claim Your character");
 
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-white">
+    <main className="relative min-h-[100dvh] overflow-x-hidden bg-white">
       <PastelBackdrop />
       <HomeButton />
 

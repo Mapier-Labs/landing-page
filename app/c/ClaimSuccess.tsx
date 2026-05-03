@@ -25,7 +25,7 @@ function displayName(slug: string): string {
 export default function ClaimSuccess({ character }: ClaimSuccessProps) {
   const name = displayName(character.character_slug);
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-white">
+    <main className="relative min-h-[100dvh] overflow-x-hidden bg-white">
       <PastelBackdrop />
       <HomeButton />
 

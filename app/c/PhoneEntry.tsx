@@ -56,7 +56,7 @@ export default function PhoneEntry({ characterSlug, initialPhone, onSubmitted }:
   };
 
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-white">
+    <main className="relative min-h-[100dvh] overflow-x-hidden bg-white">
       <PastelBackdrop />
       <HomeButton />
 
