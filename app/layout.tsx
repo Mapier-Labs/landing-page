@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { Nunito, Fraunces } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Nunito } from "next/font/google";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -8,13 +8,9 @@ const nunito = Nunito({
   weight: ["500", "700"],
 });
 
-// Hornbill Trial substitute: Fraunces (variable display serif) at heaviest weight
-// captures the chunky, quirky-bold character of the design.
-const fraunces = Fraunces({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["700", "900"],
-});
+// `--font-display` resolves to Hornbill Trial Bold (loaded via @font-face in
+// globals.css). Hornbill has only a Bold weight; we claim 700-900 in the
+// font-face declaration so any Tailwind font-weight class resolves to it.
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://mapier.ai"),
@@ -58,6 +54,16 @@ export const metadata: Metadata = {
   other: {
     "google-site-verification": "PLACEHOLDER",
   },
+};
+
+// `interactiveWidget: 'resizes-content'` makes 100dvh shrink when the iOS soft
+// keyboard opens, so flex layouts on /c reflow with the keyboard. `viewportFit:
+// 'cover'` activates safe-area-inset-* on iPhone notched devices.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
 };
 
 const jsonLd = {
@@ -106,7 +112,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${nunito.className} ${nunito.variable} ${fraunces.variable} antialiased`}>
+      <body className={`${nunito.className} ${nunito.variable} antialiased`}>
         {children}
       </body>
     </html>

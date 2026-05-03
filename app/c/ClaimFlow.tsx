@@ -36,6 +36,38 @@ function useDevStepOverride(): Step | "welcome" | null {
   return null;
 }
 
+// Dev-only character override — `?character=cat|alien|piece-of-shit|...` lets
+// designers preview the reveal screen with a specific character without
+// re-rolling. Slug → tier/rarity is hardcoded here for QA only; production
+// values come from the backend roll.
+const DEV_CHARACTER_TIERS: Record<string, { tier: string; rarity_label: string }> = {
+  "piece-of-shit": { tier: "SSS", rarity_label: "Top 0.01%" },
+  tardigrade: { tier: "SS", rarity_label: "Top 0.5%" },
+  alien: { tier: "S", rarity_label: "Top 1%" },
+  leopard: { tier: "S", rarity_label: "Top 1%" },
+  nautilus: { tier: "A", rarity_label: "Top 5%" },
+  seahorse: { tier: "A", rarity_label: "Top 5%" },
+  raven: { tier: "A", rarity_label: "Top 8%" },
+  seal: { tier: "B", rarity_label: "Top 12%" },
+  "crested-gecko": { tier: "B", rarity_label: "Top 15%" },
+  hedgehog: { tier: "B", rarity_label: "Top 15%" },
+  deer: { tier: "B", rarity_label: "Top 25%" },
+  raccoon: { tier: "C", rarity_label: "Top 30%" },
+  cat: { tier: "C", rarity_label: "Top 40%" },
+  pigeon: { tier: "C", rarity_label: "Top 50%" },
+  "crushed-can": { tier: "D", rarity_label: "Top 60%" },
+  mapi: { tier: "C", rarity_label: "Top 40%" },
+};
+
+function useDevCharacterOverride(): RevealCharacter | null {
+  const params = useSearchParams();
+  if (process.env.NODE_ENV !== "development") return null;
+  const slug = params.get("character");
+  if (!slug) return null;
+  const meta = DEV_CHARACTER_TIERS[slug] ?? { tier: "C", rarity_label: "Top 40%" };
+  return { character_slug: slug, ...meta };
+}
+
 // Stub data for dev-mode jump-forward QA — never seen in production because
 // the override is gated on NODE_ENV.
 const DEV_STUB: RevealCharacter = {
@@ -56,13 +88,28 @@ interface InitialState {
 // once per mount via lazy useState initializers below — this avoids the
 // `react-hooks/set-state-in-effect` cascade that would otherwise fire if we
 // set the same state imperatively inside a `useEffect`.
-function computeInitialState(devOverride: Step | "welcome" | null): InitialState {
+function computeInitialState(
+  devOverride: Step | "welcome" | null,
+  devCharacter: RevealCharacter | null
+): InitialState {
+  // `?character=` short-circuits the roll regardless of step. When combined
+  // with `?step=success` it shows the success screen with that character.
+  const stub = devCharacter ?? DEV_STUB;
   if (devOverride) {
     return {
       step: devOverride === "welcome" ? "reveal" : devOverride,
-      rolled: DEV_STUB,
-      claimed: DEV_STUB,
+      rolled: stub,
+      claimed: stub,
       welcomeBack: devOverride === "welcome",
+      needsRoll: false,
+    };
+  }
+  if (devCharacter) {
+    return {
+      step: "reveal",
+      rolled: devCharacter,
+      claimed: null,
+      welcomeBack: false,
       needsRoll: false,
     };
   }
@@ -106,10 +153,11 @@ function computeInitialState(devOverride: Step | "welcome" | null): InitialState
 
 export default function ClaimFlow() {
   const devOverride = useDevStepOverride();
+  const devCharacter = useDevCharacterOverride();
 
   // Computed once on first render via a lazy state initializer. We never call
   // `setInitial` — it's just a stable handle to the mount-time decision.
-  const [initial] = useState<InitialState>(() => computeInitialState(devOverride));
+  const [initial] = useState<InitialState>(() => computeInitialState(devOverride, devCharacter));
 
   const [step, setStep] = useState<Step>(initial.step);
 

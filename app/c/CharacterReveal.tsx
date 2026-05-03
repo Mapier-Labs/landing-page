@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 import { getCharacter } from "@/lib/characters";
-import { HomeButton, PastelBackdrop, PrimaryButton, Sparkle } from "./_shared";
+import {
+  HomeButton,
+  PastelBackdrop,
+  PrimaryButton,
+  Sparkle,
+  StickyCTA,
+  StickyCTASpacer,
+} from "./_shared";
 
 export interface RevealCharacter {
   /** Server-issued slug. May be unknown to lib/characters if posters predate a deploy. */
@@ -60,21 +67,37 @@ export default function CharacterReveal({
       <PastelBackdrop />
       <HomeButton />
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[402px] flex-col px-6 pb-10 pt-[140px]">
-        {/* Header text — display serif (Fraunces 900) at heavy weight to mimic Hornbill,
-            white sticker-stroke around glyphs, soft drop shadow, tight tracking, per Figma
-            6138:88481 / 6138:88487. Each row sits below the previous with explicit gap so
-            the rotated name never overlaps the pills. */}
+      {/* Even-spacing layout — three content blocks (header, sticker, tagline)
+          sit between four flex-grow rails. On tall viewports the rails grow
+          to distribute content evenly; on short viewports they collapse to
+          their min-heights so nothing gets pushed off-screen. The tagline is
+          always above StickyCTASpacer, never under the CTA. */}
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[402px] flex-col px-6">
+        {/* Top rail — clears the absolute-positioned HomeButton (top: max(56px, safe-area), 44px tall).
+            Larger shrink so on short viewports it gives up more room than the inter-block rails. */}
+        <div className="min-h-[88px] flex-1 shrink-[3]" />
+
         <div className="flex flex-col items-center text-center">
-          <p className="font-display text-[24px] font-black leading-[28px] tracking-[-1.2px] text-[#131311] [paint-order:stroke] [-webkit-text-stroke:3px_white] [text-shadow:0_0_24px_rgba(0,0,0,0.08)]">
+          <p className="sticker-text-md font-display text-[24px] font-bold leading-[28px] tracking-[-1.2px] text-[#131311]">
             {heading}
           </p>
-          <h1 className="mt-4 font-display text-[40px] font-black leading-[42px] tracking-[-2px] text-[#131311] -rotate-[5.75deg] whitespace-nowrap [paint-order:stroke] [-webkit-text-stroke:4px_white] [text-shadow:0_0_32px_rgba(0,0,0,0.10)]">
-            {name}!
+          {/* Horizontal auto-layout — name and "!" sit in separate spans with a
+              small gap so each glyph cluster gets its own white stroke instead
+              of the strokes merging across the trailing punctuation. The gap
+              must be ≥ 2× stroke outset (here ~12px ≥ 12px) to guarantee no
+              visual overlap. */}
+          {/* Visual rebalance — name tilts left (-5.75°), pills tilt right
+              (+2.99°). To make the two compositions feel like they meet in
+              the middle (instead of stacking dead-center), the name pushes
+              clearly LEFT and the pills push clearly RIGHT. Title sits on
+              `z-10` so when it overlaps the pill row it stays on top — the
+              sticker should always feel like it's the front layer. */}
+          <h1 className="sticker-text-lg relative z-10 -translate-x-[22px] mt-4 -rotate-[5.75deg] flex items-baseline justify-center gap-[10px] whitespace-nowrap font-display text-[36px] font-bold leading-[42px] tracking-[-1.8px] text-[#131311]">
+            <span>{name}</span>
+            <span>!</span>
           </h1>
 
-          {/* Tier + rarity pills, slight tilt to match design (rotate 2.99°), well below name */}
-          <div className="mt-6 flex rotate-[2.99deg] items-center gap-3">
+          <div className="relative z-0 -mt-1 flex translate-x-[24px] rotate-[2.99deg] items-center gap-3">
             <TierBadge tier={character.tier} />
             <span className="rounded-full bg-white px-3 py-2 font-nunito text-[14px] font-medium leading-4 text-[#131311] shadow-[0_0_20px_rgba(0,0,0,0.12)]">
               {character.rarity_label}
@@ -82,14 +105,21 @@ export default function CharacterReveal({
           </div>
         </div>
 
-        {/* Sticker block — sparkles positioned at sticker corners with a slow drift that
-            occasionally crosses onto the sticker (z-20 keeps them on top when they do).
-            Outer wrappers handle the float animation; inner wrappers hold the static
-            rotation so the two transforms compose without fighting. */}
-        <div className="relative mx-auto mt-10 h-[300px] w-[280px]">
-          {/* Sticker first so sparkles render above it via z-index. We key on
-              the slug so swapping the rolled character (rare ALREADY_CLAIMED
-              correction path) re-mounts the image and re-runs the float in. */}
+        {/* Auto gap between the header block and the sticker — flex-1 means it
+            grows to fill space on tall viewports while still respecting a
+            min-height floor on short ones. */}
+        <div className="min-h-[16px] flex-1" />
+
+        {/* Sticker stage scales with viewport height so the layout remains
+            evenly distributed on short phones (iPhone SE 568h) without
+            requiring scroll. The image inside scales relative to the stage. */}
+        <div
+          className="relative mx-auto shrink-0"
+          style={{
+            width: "clamp(200px, 36vh, 280px)",
+            height: "clamp(200px, 36vh, 280px)",
+          }}
+        >
           <div className="absolute inset-0 z-10 flex items-center justify-center">
             <div
               key={character.character_slug}
@@ -99,37 +129,47 @@ export default function CharacterReveal({
                 <Image
                   src={`/characters/${character.character_slug}.png`}
                   alt={name}
-                  width={280}
-                  height={280}
+                  width={240}
+                  height={240}
                   priority
-                  className="h-auto w-[280px] select-none drop-shadow-[0_14px_40px_rgba(0,0,0,0.22)]"
+                  className="h-auto select-none drop-shadow-[0_6px_16px_rgba(0,0,0,0.10)]"
+                  style={{ width: "clamp(170px, 31vh, 240px)" }}
                 />
               </div>
             </div>
           </div>
 
-          {/* Lower-left sparkle — sits at sticker's lower-left, drifts down/around */}
-          <div className="pointer-events-none absolute bottom-[10px] left-[10px] z-20 animate-[float-fast_3.4s_ease-in-out_infinite]">
-            <Sparkle className="h-[60px] w-[60px] -rotate-[12.72deg] drop-shadow-md" />
+          {/* Sparkle size scales with the sticker stage — Figma keeps a ~29%
+              ratio between sparkle and sticker. clamp matches the sticker's
+              `clamp(200px, 36vh, 280px)` at 0.29×. */}
+          <div className="pointer-events-none absolute bottom-[6%] left-[4%] z-20 animate-[float-fast_3.4s_ease-in-out_infinite]">
+            <span className="inline-block -rotate-[12.72deg]">
+              <Sparkle size="clamp(58px, 10vh, 80px)" />
+            </span>
           </div>
-          {/* Upper-right sparkle — sits at sticker's upper-right, drifts up/around with offset start */}
-          <div className="pointer-events-none absolute top-[20px] right-[10px] z-20 animate-[float-slow_4.8s_ease-in-out_-1.5s_infinite]">
-            <Sparkle className="h-[60px] w-[60px] rotate-[13.24deg] drop-shadow-md" />
+          <div className="pointer-events-none absolute right-[2%] top-[4%] z-20 animate-[float-slow_4.8s_ease-in-out_-1.5s_infinite]">
+            <span className="inline-block rotate-[13.24deg]">
+              <Sparkle size="clamp(58px, 10vh, 80px)" />
+            </span>
           </div>
         </div>
 
-        {/* Tagline — Nunito Medium 14, sits ~32px below the sticker per Figma. Falls back
-            to a subtle "Your character is saved" line for slugs we don't have copy for. */}
-        <p className="mx-auto mt-8 max-w-xs text-center font-nunito text-[14px] font-medium leading-4 text-[#131311]">
+        <div className="min-h-[24px] flex-1" />
+
+        <p className="sticker-text-sm mx-auto max-w-xs text-center font-nunito text-[14px] font-medium leading-5 text-[#131311]">
           {tagline ?? (welcomeBack ? "Your character is saved to your account." : "")}
         </p>
 
-        {/* CTA — Nunito Bold 16, tracking -0.24px, rounded-full. mt-auto pushes the
-            CTA to the bottom of the flex column regardless of viewport height. */}
-        <div className="mx-auto mt-auto w-full max-w-[362px] pt-12 pb-6">
-          <PrimaryButton onClick={onContinue}>{button}</PrimaryButton>
-        </div>
+        {/* Bottom rail — small fixed gap between tagline and the CTA spacer
+            so the tagline doesn't sit pinned to the top of the CTA. */}
+        <div className="min-h-[20px] flex-[0.4]" />
+
+        <StickyCTASpacer />
       </div>
+
+      <StickyCTA>
+        <PrimaryButton onClick={onContinue}>{button}</PrimaryButton>
+      </StickyCTA>
     </main>
   );
 }
