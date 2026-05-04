@@ -33,13 +33,16 @@
 
 @theme inline {
   --font-nunito: var(--font-nunito);
-  --font-display: var(--font-display);
+  --font-display: "Hornbill", Georgia, "Times New Roman", serif;
 }
 
 @font-face {
   font-family: "Hornbill";
   src: url("/landing/fonts/HornbillTrial-Bold.ttf") format("truetype");
-  font-weight: 700;
+  /* Hornbill Trial only ships a Bold cut — claim the whole 700-900 range so
+     a Tailwind class like `font-black` (900) still resolves to this file
+     instead of falling back to a synthetic system bold. */
+  font-weight: 700 900;
   font-style: normal;
   font-display: swap;
 }
@@ -1204,6 +1207,42 @@ html.page-scrollable body {
   .page-section--highlight {
     padding: 24px 20px;
   }
+}
+
+/* Sticker-style headings used by the /c claim flow.
+ *
+ * Spec from Figma nodes 6138:88481 / 6138:88487:
+ *   - Black text fill (#131311)
+ *   - Soft halo: text-shadow 0 0 40px rgba(0,0,0,0.12) — no offset, no second
+ *     layer. Matches Figma's "middle shadow light" effect token.
+ *   - White outset stroke: NOT in the Figma export, but the brand calls for
+ *     one. `-webkit-text-stroke` is path-centered; `paint-order: stroke fill`
+ *     puts the fill on top so the stroke renders as a clean outset (visible
+ *     width = declared / 2).
+ */
+.sticker-text-md,
+.sticker-text-lg {
+  paint-order: stroke fill;
+  -webkit-font-smoothing: antialiased;
+  /* `filter: drop-shadow` (not `text-shadow`) so the shadow is cast by the
+     entire rendered shape — black fill *plus* white stroke as one unit.
+     `text-shadow` shadows only the glyph fill, leaving the stroke without
+     a shadow, which made the stroke look detached from the text. */
+  filter: drop-shadow(0 0 12px rgba(0, 0, 0, 0.18));
+}
+
+.sticker-text-md {
+  -webkit-text-stroke: 9px #ffffff;
+}
+
+.sticker-text-lg {
+  -webkit-text-stroke: 12px #ffffff;
+}
+
+/* Body / tagline copy — small, no stroke, just a soft drop shadow to match
+   the rest of the depth language. */
+.sticker-text-sm {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
 }
 
 /* Floating motion used by the QR claim flow's sticker + sparkles. The keyframes

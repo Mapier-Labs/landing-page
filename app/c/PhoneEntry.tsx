@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { ApiError, requestOtp } from "@/lib/api";
-import { HomeButton, PastelBackdrop, Sparkle } from "./_shared";
+import { HomeButton, PastelBackdrop, Sparkle, StickyCTA, StickyCTASpacer } from "./_shared";
 
 interface PhoneEntryProps {
   /** Slug of the rolled character — used only to render the sticker thumbnail. */
@@ -60,7 +60,7 @@ export default function PhoneEntry({ characterSlug, initialPhone, onSubmitted }:
       <PastelBackdrop />
       <HomeButton />
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[402px] flex-col px-5 pb-8 pt-[140px]">
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[402px] flex-col px-5 pt-[140px]">
         {/* Header — sticker floats to the right and the title + subtitle flow around it,
             matching the Figma layout where copy hugs the character. The container clears the
             float at the end so the form below isn't affected. */}
@@ -77,34 +77,38 @@ export default function PhoneEntry({ characterSlug, initialPhone, onSubmitted }:
                       width={160}
                       height={160}
                       priority
-                      className="h-auto w-[160px] select-none drop-shadow-[0_10px_24px_rgba(0,0,0,0.2)]"
+                      className="h-auto w-[160px] select-none drop-shadow-[0_5px_12px_rgba(0,0,0,0.10)]"
                     />
                   ) : null}
                 </div>
               </div>
             </div>
-            {/* Sparkles drift on/off the sticker */}
-            <div className="pointer-events-none absolute -left-2 bottom-3 z-20 animate-[float-fast_3.4s_ease-in-out_infinite]">
-              <Sparkle className="h-9 w-9 -rotate-12 drop-shadow-md" />
+            {/* Sparkles drift on/off the sticker — same Figma cushion-star asset */}
+            <div className="pointer-events-none absolute -left-3 bottom-2 z-20 animate-[float-fast_3.4s_ease-in-out_infinite]">
+              <span className="inline-block -rotate-12">
+                <Sparkle size={42} />
+              </span>
             </div>
-            <div className="pointer-events-none absolute -right-1 top-2 z-20 animate-[float-slow_4.8s_ease-in-out_-1.2s_infinite]">
-              <Sparkle className="h-9 w-9 rotate-[18deg] drop-shadow-md" />
+            <div className="pointer-events-none absolute -right-2 top-1 z-20 animate-[float-slow_4.8s_ease-in-out_-1.2s_infinite]">
+              <span className="inline-block rotate-[18deg]">
+                <Sparkle size={42} />
+              </span>
             </div>
           </div>
 
           {/* Title + subtitle wrap naturally around the floated sticker. */}
-          <h1 className="font-display text-[30px] font-black leading-[34px] tracking-[-1.4px] text-[#131311] [paint-order:stroke] [-webkit-text-stroke:3px_white] [text-shadow:0_0_28px_rgba(0,0,0,0.08)]">
+          <h1 className="sticker-text-lg font-display text-[30px] font-bold leading-[34px] tracking-[-1.4px] text-[#131311]">
             Register to Mapier
           </h1>
-          <p className="mt-3 font-nunito text-[14px] font-medium leading-[20px] text-[#797876]">
+          <p className="sticker-text-sm mt-3 font-nunito text-[14px] font-medium leading-[20px] text-[#797876]">
             Enter your phone number to get started.
           </p>
         </div>
 
         <div className="flex-1" />
 
-        {/* Phone input + CTA at bottom */}
-        <form onSubmit={handleSubmit} className="space-y-5 pb-2">
+        {/* Phone input row + spacer for the StickyCTA below */}
+        <form onSubmit={handleSubmit} className="space-y-5 pb-2" id="phone-form">
           <div className="flex items-center gap-2 px-1">
             {/* Country selector — fixed-width round pill so it visually matches the Figma "+1" chip */}
             <div className="relative shrink-0">
@@ -141,26 +145,31 @@ export default function PhoneEntry({ characterSlug, initialPhone, onSubmitted }:
               {error}
             </div>
           )}
-
-          <button
-            type="submit"
-            disabled={!isPotentiallyValid || isSubmitting}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-[#131311] px-[18px] py-3 text-base font-bold tracking-tight text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                Sending code…
-              </>
-            ) : (
-              <>
-                Register
-                <ChevronRight className="h-5 w-5" />
-              </>
-            )}
-          </button>
         </form>
+
+        <StickyCTASpacer />
       </div>
+
+      <StickyCTA>
+        <button
+          type="submit"
+          form="phone-form"
+          disabled={!isPotentiallyValid || isSubmitting}
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#131311] px-[18px] py-3 font-nunito text-[16px] font-bold tracking-[-0.24px] text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Sending code…
+            </>
+          ) : (
+            <>
+              Register
+              <ChevronRight className="h-5 w-5" />
+            </>
+          )}
+        </button>
+      </StickyCTA>
     </main>
   );
 }

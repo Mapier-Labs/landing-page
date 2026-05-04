@@ -4,7 +4,7 @@ import Image from "next/image";
 import { ChangeEvent, ClipboardEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { ApiError, claimCharacter, extractExistingClaim, requestOtp, verifyOtp } from "@/lib/api";
-import { HomeButton, PastelBackdrop, Sparkle } from "./_shared";
+import { HomeButton, PastelBackdrop, Sparkle, StickyCTA, StickyCTASpacer } from "./_shared";
 import { getPendingClaimToken } from "./ClaimFlow";
 import type { RevealCharacter } from "./CharacterReveal";
 
@@ -53,14 +53,39 @@ export default function OtpVerify({
     });
   };
 
-  const handleChange = (idx: number, e: ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    // strip everything but digits, take last char (handles autofill that fills 1 char at a time)
-    const digit = raw.replace(/\D/g, "").slice(-1);
-    setDigitAt(idx, digit);
-    if (digit && idx < CODE_LENGTH - 1) {
-      inputRefs.current[idx + 1]?.focus();
+  // Handles three cases:
+  //   1. User typing a single digit → fill this box, advance.
+  //   2. iOS one-time-code autofill → the whole 6-digit code lands in the
+  //      first input as one onChange. Distribute across boxes from `idx`.
+  //   3. Box cleared → wipe and stay put.
+  const fillFromIndex = (idx: number, rawDigits: string) => {
+    if (rawDigits.length === 0) {
+      setDigitAt(idx, "");
+      return;
     }
+    if (rawDigits.length === 1) {
+      setDigitAt(idx, rawDigits);
+      if (idx < CODE_LENGTH - 1) {
+        inputRefs.current[idx + 1]?.focus();
+      }
+      return;
+    }
+    setDigits((prev) => {
+      const next = [...prev];
+      for (let i = 0; i < CODE_LENGTH; i += 1) {
+        const sourceIdx = i - idx;
+        if (sourceIdx >= 0 && sourceIdx < rawDigits.length) {
+          next[i] = rawDigits[sourceIdx];
+        }
+      }
+      return next;
+    });
+    const lastFilled = Math.min(idx + rawDigits.length, CODE_LENGTH) - 1;
+    inputRefs.current[Math.min(lastFilled + 1, CODE_LENGTH - 1)]?.focus();
+  };
+
+  const handleChange = (idx: number, e: ChangeEvent<HTMLInputElement>) => {
+    fillFromIndex(idx, e.target.value.replace(/\D/g, ""));
   };
 
   const handleKeyDown = (idx: number, e: KeyboardEvent<HTMLInputElement>) => {
@@ -166,7 +191,7 @@ export default function OtpVerify({
       <PastelBackdrop />
       <HomeButton />
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[402px] flex-col px-5 pb-8 pt-[140px]">
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[402px] flex-col px-5 pt-[140px]">
         {/* Header — sticker floats to the right and copy flows around it. */}
         <div className="pr-1 after:block after:clear-both after:content-['']">
           {/* Floating sticker block — float-right so text flows around */}
@@ -180,24 +205,28 @@ export default function OtpVerify({
                       alt=""
                       width={160}
                       height={160}
-                      className="h-auto w-[160px] select-none drop-shadow-[0_10px_24px_rgba(0,0,0,0.2)]"
+                      className="h-auto w-[160px] select-none drop-shadow-[0_5px_12px_rgba(0,0,0,0.10)]"
                     />
                   ) : null}
                 </div>
               </div>
             </div>
-            <div className="pointer-events-none absolute -left-2 bottom-3 z-20 animate-[float-fast_3.4s_ease-in-out_infinite]">
-              <Sparkle className="h-9 w-9 -rotate-12 drop-shadow-md" />
+            <div className="pointer-events-none absolute -left-3 bottom-2 z-20 animate-[float-fast_3.4s_ease-in-out_infinite]">
+              <span className="inline-block -rotate-12">
+                <Sparkle size={42} />
+              </span>
             </div>
-            <div className="pointer-events-none absolute -right-1 top-2 z-20 animate-[float-slow_4.8s_ease-in-out_-1.2s_infinite]">
-              <Sparkle className="h-9 w-9 rotate-[18deg] drop-shadow-md" />
+            <div className="pointer-events-none absolute -right-2 top-1 z-20 animate-[float-slow_4.8s_ease-in-out_-1.2s_infinite]">
+              <span className="inline-block rotate-[18deg]">
+                <Sparkle size={42} />
+              </span>
             </div>
           </div>
 
-          <h1 className="font-display text-[30px] font-black leading-[34px] tracking-[-1.4px] text-[#131311] [paint-order:stroke] [-webkit-text-stroke:3px_white] [text-shadow:0_0_28px_rgba(0,0,0,0.08)]">
+          <h1 className="sticker-text-lg font-display text-[30px] font-bold leading-[34px] tracking-[-1.4px] text-[#131311]">
             Verify your number
           </h1>
-          <p className="mt-3 font-nunito text-[14px] font-medium leading-[20px] text-[#797876]">
+          <p className="sticker-text-sm mt-3 font-nunito text-[14px] font-medium leading-[20px] text-[#797876]">
             Enter the code we sent to{" "}
             <button
               type="button"
@@ -212,7 +241,7 @@ export default function OtpVerify({
 
         <div className="flex-1" />
 
-        <form onSubmit={handleSubmit} className="space-y-5 pb-2">
+        <form onSubmit={handleSubmit} className="space-y-5 pb-2" id="otp-form">
           {/* Six round inputs */}
           <div className="flex items-center justify-between gap-2 px-1">
             {digits.map((d, i) => (
@@ -255,26 +284,31 @@ export default function OtpVerify({
               {error}
             </div>
           )}
-
-          <button
-            type="submit"
-            disabled={!codeComplete || isSubmitting}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-[#131311] px-[18px] py-3 text-base font-bold tracking-tight text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                Verifying…
-              </>
-            ) : (
-              <>
-                Register
-                <ChevronRight className="h-5 w-5" />
-              </>
-            )}
-          </button>
         </form>
+
+        <StickyCTASpacer />
       </div>
+
+      <StickyCTA>
+        <button
+          type="submit"
+          form="otp-form"
+          disabled={!codeComplete || isSubmitting}
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#131311] px-[18px] py-3 font-nunito text-[16px] font-bold tracking-[-0.24px] text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Verifying…
+            </>
+          ) : (
+            <>
+              Register
+              <ChevronRight className="h-5 w-5" />
+            </>
+          )}
+        </button>
+      </StickyCTA>
     </main>
   );
 }
