@@ -2,7 +2,7 @@
 
 import { Loader2, Share2 } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getCharacter } from "@/lib/characters";
 import { HomeButton, PastelBackdrop, Sparkle } from "./_shared";
 import { StickyCTA, StickyCTASpacer } from "./_shared";
@@ -28,63 +28,96 @@ function displayName(slug: string): string {
 export default function ClaimSuccess({ character }: ClaimSuccessProps) {
   const name = displayName(character.character_slug);
   const [shareState, setShareState] = useState<"idle" | "loading" | "error">("idle");
+  // Prefetched share image. The Web Share API requires the call to navigator.share
+  // happen *synchronously* with the user's click — any awaited fetch in the
+  // click handler burns the transient user activation and the OS share sheet
+  // either silently fails or (on Chrome) the fallback popup gets blocked.
+  // So we prefetch the PNG on mount, cache the File object, and the click
+  // handler hands it straight to navigator.share with zero awaits before it.
+  const fileRef = useRef<File | null>(null);
 
-  // Share to Instagram Story (or whichever app the OS share sheet routes to).
-  // Strategy:
-  //   1. Fetch /share/character/[slug] PNG (1080×1920 with QR in the corner).
-  //   2. Hand the file to navigator.share — Instagram surfaces "Add to Story"
-  //      from the iOS/Android share sheet.
-  //   3. Fallback: open the PNG in a new tab so the user can save + post manually.
-  // We don't bother with the `instagram-stories://` deep link — it requires a
-  // registered Facebook App ID and is unreliable from mobile web.
-  const handleShare = async () => {
-    if (shareState === "loading") return;
-    setShareState("loading");
-
+  useEffect(() => {
+    let cancelled = false;
     const params = new URLSearchParams({
       tier: character.tier,
       rarity: character.rarity_label,
     });
     const shareUrl = `/share/character/${character.character_slug}?${params.toString()}`;
 
-    try {
-      const res = await fetch(shareUrl);
-      if (!res.ok) throw new Error(`status ${res.status}`);
-      const blob = await res.blob();
-      const file = new File([blob], `mapier-${character.character_slug}.png`, {
-        type: "image/png",
-      });
+    fetch(shareUrl)
+      .then((res) => {
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        return res.blob();
+      })
+      .then((blob) => {
+        if (cancelled) return;
+        fileRef.current = new File([blob], `mapier-${character.character_slug}.png`, {
+          type: "image/png",
+        });
+        // If the user already clicked while the prefetch was in flight, drop
+        // them back into the idle state so the button reads "Share to Story"
+        // again — they need to click a second time to fire navigator.share
+        // (the user activation from the first click is long gone).
+        setShareState((s) => (s === "loading" ? "idle" : s));
+      })
+      .catch((err) => console.warn("prefetch share image failed", err));
 
-      // navigator.canShare with files isn't on TS lib.dom, hence the assert.
-      const nav = navigator as Navigator & {
-        canShare?: (data: { files?: File[] }) => boolean;
-      };
+    return () => {
+      cancelled = true;
+    };
+  }, [character.character_slug, character.tier, character.rarity_label]);
 
-      if (nav.canShare?.({ files: [file] }) && navigator.share) {
-        await navigator.share({
+  // Strategy:
+  //   1. If the share image is ready and the platform supports file share,
+  //      open the OS share sheet directly. No popup, no intermediate page.
+  //   2. If the platform can't share files (desktop Chrome, etc.), trigger
+  //      a download via a synthetic <a download> click — also no popup,
+  //      no popup blocker, the user gets the PNG saved straight to disk.
+  //   3. If the image isn't fetched yet (slow network), surface the loading
+  //      state and let the prefetch catch up — we never await inside the
+  //      click handler.
+  // We don't bother with the `instagram-stories://` deep link — it requires
+  // a registered Facebook App ID and is unreliable from mobile web.
+  const handleShare = () => {
+    const file = fileRef.current;
+    if (!file) {
+      // Prefetch hasn't landed yet. Show loading; the next click after the
+      // file is ready will succeed.
+      setShareState("loading");
+      return;
+    }
+    setShareState("idle");
+
+    const nav = navigator as Navigator & {
+      canShare?: (data: { files?: File[] }) => boolean;
+    };
+
+    if (nav.canShare?.({ files: [file] }) && navigator.share) {
+      // No await before share() — preserves the click's user activation.
+      navigator
+        .share({
           files: [file],
           title: `I got ${name}!`,
           text: `I rolled ${name} on Mapier — what's yours?`,
+        })
+        .catch((err) => {
+          if (err instanceof Error && err.name === "AbortError") return;
+          console.warn("share failed", err);
         });
-        setShareState("idle");
-        return;
-      }
-
-      // Fallback: open the image in a new tab so the user can long-press + save.
-      window.open(shareUrl, "_blank", "noopener,noreferrer");
-      setShareState("idle");
-    } catch (err) {
-      // User-cancellation throws AbortError, which we silently swallow.
-      if (err instanceof Error && err.name === "AbortError") {
-        setShareState("idle");
-        return;
-      }
-      console.warn("share failed", err);
-      setShareState("error");
-      // Last-resort fallback so the button still does *something*.
-      window.open(shareUrl, "_blank", "noopener,noreferrer");
-      setTimeout(() => setShareState("idle"), 2000);
+      return;
     }
+
+    // Desktop / unsupported browsers: trigger a download instead of opening
+    // a popup. <a download> doesn't need a fresh user activation and isn't
+    // subject to popup blockers.
+    const objectUrl = URL.createObjectURL(file);
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = `mapier-${character.character_slug}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(objectUrl);
   };
 
   return (
