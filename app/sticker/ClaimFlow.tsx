@@ -14,13 +14,14 @@ import {
 import CharacterReveal, { RevealCharacter } from "./CharacterReveal";
 import PhoneEntry from "./PhoneEntry";
 import OtpVerify from "./OtpVerify";
+import NameEntry from "./NameEntry";
 import ClaimSuccess from "./ClaimSuccess";
 
-type Step = "reveal" | "phone" | "otp" | "success";
+type Step = "reveal" | "phone" | "otp" | "name" | "success";
 
-// Dev-only step override: in development, ?step=phone|otp|success jumps the flow
-// forward for visual QA. Production users always start at 'reveal'. We also
-// accept ?step=welcome to force the returning-user reveal copy.
+// Dev-only step override: in development, ?step=phone|otp|name|success jumps
+// the flow forward for visual QA. Production users always start at 'reveal'.
+// We also accept ?step=welcome to force the returning-user reveal copy.
 function useDevStepOverride(): Step | "welcome" | null {
   const params = useSearchParams();
   if (process.env.NODE_ENV !== "development") return null;
@@ -28,6 +29,7 @@ function useDevStepOverride(): Step | "welcome" | null {
   if (
     requested === "phone" ||
     requested === "otp" ||
+    requested === "name" ||
     requested === "success" ||
     requested === "welcome"
   ) {
@@ -299,18 +301,24 @@ export default function ClaimFlow() {
         setWelcomeBack(true);
         setClaimed(claimedAs);
         setStep("reveal");
-        // Hold the corrected reveal for a moment, then advance to success.
+        // Hold the corrected reveal for a moment, then advance to name capture.
         await sleep(1600);
         setIsCorrecting(false);
-        setStep("success");
+        setStep("name");
         return;
       }
 
       setClaimed(claimedAs);
-      setStep("success");
+      setStep("name");
     },
     [rolled, phone]
   );
+
+  // Name page is purely advisory — it mirrors first/last name into the
+  // waitlist row but doesn't gate success. NameEntry calls this both on
+  // submit and on any non-blocking failure, so the user always reaches
+  // their claimed character.
+  const goToSuccessFromName = useCallback(() => setStep("success"), []);
 
   // ---------- Render ----------
 
@@ -369,6 +377,16 @@ export default function ClaimFlow() {
         phone={phone}
         onClaimed={handleClaimed}
         onChangePhone={goBackToPhone}
+      />
+    );
+  }
+
+  if (step === "name") {
+    return (
+      <NameEntry
+        characterSlug={(claimed ?? rolled)?.character_slug ?? ""}
+        phone={phone}
+        onSubmitted={goToSuccessFromName}
       />
     );
   }

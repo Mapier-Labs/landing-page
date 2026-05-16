@@ -9,7 +9,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
 
-const url = "https://www.mapier.ai/c";
+const url = "https://www.mapier.ai/sticker";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outPath = resolve(root, "public/qr/poster.png");
 
