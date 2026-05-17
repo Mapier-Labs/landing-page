@@ -28,10 +28,10 @@ export function useDraggableLanding() {
 
     draggables.forEach((el) => {
       if (isMobile) {
-        // Exclude app icon, title, and Join Waitlist button from mobile drag
+        // Exclude app icon, title, and all buttons from mobile drag
         if (el.classList.contains("draggable--icon")) return;
         if (el.classList.contains("draggable--title")) return;
-        if (el.classList.contains("draggable--btn") && el.querySelector(".btn--cta")) return;
+        if (el.classList.contains("draggable--btn")) return;
       }
       initDraggable(el as HTMLElement);
     });
@@ -183,7 +183,6 @@ export function useDraggableLanding() {
         }
         if (!dragging) return;
         dragging = false;
-        didDrag = false;
         hovering = false;
         el.classList.remove("is-grabbing");
         el.classList.add("is-releasing");
