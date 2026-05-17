@@ -84,7 +84,7 @@ export function LandingExperience() {
       </Draggable>
 
       {STICKERS.map((sticker, i) => (
-        <Draggable key={i} initRotate={sticker.initRotate} style={sticker.style as CSSProperties}>
+        <Draggable key={i} initRotate={sticker.initRotate} className={sticker.className} style={sticker.style as CSSProperties}>
           <Image
             src={sticker.src}
             alt=""

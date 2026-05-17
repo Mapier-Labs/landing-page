@@ -299,8 +299,13 @@ body.is-releasing {
     flex-direction: column;
     gap: 2px;
     text-align: center;
-    padding: 8px 16px;
-    font-size: 14px;
+    padding: 6px 16px;
+    font-size: 12px;
+  }
+
+  /* Hide tagline on mobile to keep footer compact */
+  .footer-bar > span:nth-child(2) {
+    display: none;
   }
 
   .draggable {
@@ -401,55 +406,77 @@ body.is-releasing {
   }
 
   /* Decorative stickers — scattered around periphery */
-  .draggable:has(img[src*="Frame 3185590"]) {
-    width: 100px !important;
-    left: -2% !important;
+
+  /* Top-left: clock, partially off-screen */
+  .sticker--clock {
+    width: 105px !important;
+    left: -5% !important;
     right: auto !important;
-    top: -2% !important;
+    top: 5% !important;
   }
 
-  .draggable:has(img[src*="Frame 3185629"]) {
-    width: 70px !important;
-    left: 2% !important;
+  /* Left side, upper: girl peeks from the left edge */
+  .sticker--girl {
+    width: 72px !important;
+    left: 10% !important;
     right: auto !important;
-    top: 10% !important;
+    top: 35% !important;
   }
 
-  .draggable:has(img[src*="Group 210"]) {
-    width: 90px !important;
+  /* Top-right: partially off-screen */
+  .sticker--g210 {
+    width: 88px !important;
     left: auto !important;
-    right: -2% !important;
+    right: -4% !important;
     top: -2% !important;
   }
 
   /* Hide 2619 and 2620 on mobile */
-  .draggable:has(img[src*="Group 2619"]) {
+  .sticker--g2619 {
     display: none !important;
   }
 
-  .draggable:has(img[src*="Group 2620"]) {
+  .sticker--g2620 {
     display: none !important;
   }
 
-  .draggable:has(img[src*="Group 2627"]) {
-    width: 100px !important;
-    left: -4% !important;
+  /* Bottom-left: upside-down person, peeks from edge */
+  .sticker--g2627 {
+    width: 88px !important;
+    left: -5% !important;
     right: auto !important;
-    top: 84% !important;
+    top: auto !important;
+    bottom: 22% !important;
   }
 
-  .draggable:has(img[src*="Group 2628"]) {
-    width: 55px !important;
-    left: 35% !important;
+  /* Bottom-center: apple, smaller */
+  .sticker--apple {
+    width: 62px !important;
+    left: 42% !important;
     right: auto !important;
-    top: 82% !important;
+    top: auto !important;
+    bottom: 18% !important;
   }
 
-  .draggable:has(img[src*="Group 2626"]) {
-    width: 110px !important;
+  /* Bottom-right: peeks from right edge */
+  .sticker--g2626 {
+    width: 95px !important;
     left: auto !important;
-    right: -4% !important;
-    top: 82% !important;
+    right: -5% !important;
+    top: auto !important;
+    bottom: 20% !important;
+  }
+}
+
+/* On small screens (narrow + short), bottom stickers crowd the buttons — tuck them further down */
+@media (max-width: 390px) and (max-height: 700px) {
+  .sticker--g2627,
+  .sticker--g2626 {
+    bottom: 10% !important;
+  }
+
+  .sticker--apple {
+    bottom: 6% !important;
   }
 }
 
