@@ -183,6 +183,7 @@ export function useDraggableLanding() {
         }
         if (!dragging) return;
         dragging = false;
+        didDrag = false;
         hovering = false;
         el.classList.remove("is-grabbing");
         el.classList.add("is-releasing");
