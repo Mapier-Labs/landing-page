@@ -65,20 +65,14 @@ export async function POST(request: NextRequest) {
             );
           }
           console.error("Supabase upsert error (phone + name):", error);
-          return NextResponse.json(
-            { error: "Failed to save name" },
-            { status: 500 }
-          );
+          return NextResponse.json({ error: "Failed to save name" }, { status: 500 });
         }
         console.log("Waitlist name capture (phone):", {
           phone: rawPhone,
           name: fullName,
           timestamp: new Date().toISOString(),
         });
-        return NextResponse.json(
-          { success: true, message: "Name saved." },
-          { status: 200 }
-        );
+        return NextResponse.json({ success: true, message: "Name saved." }, { status: 200 });
       }
 
       // Phone-only insert.
