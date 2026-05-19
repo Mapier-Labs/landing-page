@@ -71,7 +71,7 @@ export function LandingHero() {
         }}
       >
         <a
-          href="https://mapier.ai/c"
+          href="https://mapier.ai/sticker"
           className="btn btn--cta btn--link"
           aria-label="Join the Mapier waitlist"
         >
