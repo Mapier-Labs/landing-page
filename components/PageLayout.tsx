@@ -49,7 +49,7 @@ export function PageLayout({ children }: PageLayoutProps) {
           <div className="page-footer__links">
             <div className="page-footer__col">
               <h4>Product</h4>
-              <Link href="/#waitlist">Join Waitlist</Link>
+              <a href="https://mapier.ai/sticker">Join Waitlist</a>
               <a
                 href="https://www.linkedin.com/company/mapier-labs/"
                 target="_blank"
