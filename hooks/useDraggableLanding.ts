@@ -20,9 +20,21 @@ export function useDraggableLanding() {
       (el as HTMLElement & { _initStyle?: string })._initStyle = el.getAttribute("style") ?? "";
     });
 
-    if (!isMobile) {
-      draggables.forEach((el) => initDraggable(el as HTMLElement));
+    // Always use setProperty('important') so JS wins over any CSS !important rules
+    // (needed on mobile where sticker positions are set via !important media query rules).
+    function setPos(el: HTMLElement, prop: string, val: string) {
+      el.style.setProperty(prop, val, "important");
     }
+
+    draggables.forEach((el) => {
+      if (isMobile) {
+        // Exclude app icon, title, and all buttons from mobile drag
+        if (el.classList.contains("draggable--icon")) return;
+        if (el.classList.contains("draggable--title")) return;
+        if (el.classList.contains("draggable--btn")) return;
+      }
+      initDraggable(el as HTMLElement);
+    });
 
     if (!isMobile) {
       draggables.forEach((el, i) => {
@@ -89,20 +101,20 @@ export function useDraggableLanding() {
         ox = startX - rect.left;
         oy = startY - rect.top;
 
-        el.style.left = `${rect.left}px`;
-        el.style.top = `${rect.top}px`;
-        el.style.right = "auto";
-        el.style.bottom = "auto";
+        setPos(el, "left", `${rect.left}px`);
+        setPos(el, "top", `${rect.top}px`);
+        setPos(el, "right", "auto");
+        setPos(el, "bottom", "auto");
 
         const base = hovering ? ext._hoverRotate : baseRotate;
         grabRotate = Number((base! + (Math.random() - 0.5) * 4).toFixed(1));
-        el.style.transform = `scale(0.92) rotate(${grabRotate}deg)`;
+        setPos(el, "transform", `scale(0.92) rotate(${grabRotate}deg)`);
         el.classList.add("is-grabbing");
         document.body.classList.add("is-dragging");
 
         const pt = "touches" in e ? e.touches[0] : e;
-        el.style.left = `${pt.clientX - ox}px`;
-        el.style.top = `${pt.clientY - oy}px`;
+        setPos(el, "left", `${pt.clientX - ox}px`);
+        setPos(el, "top", `${pt.clientY - oy}px`);
       }
 
       const onGrab = (e: MouseEvent | TouchEvent) => {
@@ -127,14 +139,14 @@ export function useDraggableLanding() {
         ox = pt.clientX - rect.left;
         oy = pt.clientY - rect.top;
 
-        el.style.left = `${rect.left}px`;
-        el.style.top = `${rect.top}px`;
-        el.style.right = "auto";
-        el.style.bottom = "auto";
+        setPos(el, "left", `${rect.left}px`);
+        setPos(el, "top", `${rect.top}px`);
+        setPos(el, "right", "auto");
+        setPos(el, "bottom", "auto");
 
         const base = hovering ? ext._hoverRotate : baseRotate;
         grabRotate = Number((base! + (Math.random() - 0.5) * 4).toFixed(1));
-        el.style.transform = `scale(0.92) rotate(${grabRotate}deg)`;
+        setPos(el, "transform", `scale(0.92) rotate(${grabRotate}deg)`);
         el.classList.add("is-grabbing");
         document.body.classList.add("is-dragging");
       };
@@ -152,8 +164,8 @@ export function useDraggableLanding() {
         if (!dragging) return;
         e.preventDefault();
         const pt = "touches" in e ? e.touches[0] : e;
-        el.style.left = `${pt.clientX - ox}px`;
-        el.style.top = `${pt.clientY - oy}px`;
+        setPos(el, "left", `${pt.clientX - ox}px`);
+        setPos(el, "top", `${pt.clientY - oy}px`);
       };
 
       const onRelease = () => {
@@ -161,7 +173,6 @@ export function useDraggableLanding() {
           pending = false;
           const link = el.querySelector("a[href]") as HTMLAnchorElement | null;
           if (link) {
-            // For hash links, dispatch a real click so React listeners can catch it
             if (link.getAttribute("href")?.startsWith("#")) {
               link.click();
             } else {
@@ -172,6 +183,7 @@ export function useDraggableLanding() {
         }
         if (!dragging) return;
         dragging = false;
+        didDrag = false;
         hovering = false;
         el.classList.remove("is-grabbing");
         el.classList.add("is-releasing");
@@ -198,7 +210,7 @@ export function useDraggableLanding() {
 
         bounce.onfinish = () => {
           bounce.cancel();
-          el.style.transform = "rotate(0deg)";
+          setPos(el, "transform", "rotate(0deg)");
           el.style.filter = "";
           ext._baseRotate = 0;
           ext._hoverRotate = 0;

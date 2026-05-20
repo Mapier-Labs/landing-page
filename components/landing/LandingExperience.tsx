@@ -84,7 +84,7 @@ export function LandingExperience() {
       </Draggable>
 
       {STICKERS.map((sticker, i) => (
-        <Draggable key={i} initRotate={sticker.initRotate} style={sticker.style as CSSProperties}>
+        <Draggable key={i} initRotate={sticker.initRotate} className={sticker.className} style={sticker.style as CSSProperties}>
           <Image
             src={sticker.src}
             alt=""
@@ -97,8 +97,8 @@ export function LandingExperience() {
       ))}
 
       <footer className="footer-bar">
-        <span>© {new Date().getFullYear()} Mapier. All rights reserved.</span>
         <span>Built by Mapier Labs with ❤️ in SF</span>
+        <span>© {new Date().getFullYear()} Mapier. All rights reserved.</span>
         <nav className="footer-bar__links">
           <Link href="/support">Support</Link>
           <Link href="/privacy">Privacy</Link>

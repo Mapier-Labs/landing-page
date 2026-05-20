@@ -3,41 +3,49 @@ export const ICON_VARIANTS = ["/landing/app icon/Property 1=Default.png"] as con
 export const STICKERS = [
   {
     src: "/landing/stickers/Frame 3185590.png",
+    className: "sticker--clock",
     initRotate: -12,
     style: { left: "-2%", top: "-3%", width: 150, zIndex: 13, transform: "rotate(-12deg)" },
   },
   {
     src: "/landing/stickers/Frame 3185629.png",
+    className: "sticker--girl",
     initRotate: 5,
     style: { right: "45%", top: "50%", width: 80, zIndex: 11, transform: "rotate(5deg)" },
   },
   {
     src: "/landing/stickers/Group 210.png",
+    className: "sticker--g210",
     initRotate: 8,
     style: { left: "88%", top: "-4%", width: 130, zIndex: 14, transform: "rotate(8deg)" },
   },
   {
     src: "/landing/stickers/Group 2619.png",
+    className: "sticker--g2619",
     initRotate: 10,
     style: { left: "-2%", top: "80%", width: 90, zIndex: 10, transform: "rotate(10deg)" },
   },
   {
     src: "/landing/stickers/Group 2620.png",
+    className: "sticker--g2620",
     initRotate: -6,
     style: { left: "92%", top: "62%", width: 85, zIndex: 10, transform: "rotate(-6deg)" },
   },
   {
     src: "/landing/stickers/Group 2627.png",
+    className: "sticker--g2627",
     initRotate: -4,
     style: { left: "30%", top: "76%", width: 135, zIndex: 15, transform: "rotate(-4deg)" },
   },
   {
     src: "/landing/stickers/Group 2628.png",
+    className: "sticker--apple",
     initRotate: 7,
     style: { left: "50%", top: "82%", width: 120, zIndex: 12, transform: "rotate(7deg)" },
   },
   {
     src: "/landing/stickers/Group 2626.png",
+    className: "sticker--g2626",
     initRotate: 4,
     style: { left: "76%", top: "74%", width: 140, zIndex: 14, transform: "rotate(4deg)" },
   },
