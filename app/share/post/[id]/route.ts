@@ -9,7 +9,6 @@ const SUPABASE_KEY =
   "";
 
 const APP_STORE_ID = process.env.APP_STORE_ID ?? "";
-const APP_STORE_URL = APP_STORE_ID ? `https://apps.apple.com/app/mapier/id${APP_STORE_ID}` : "";
 
 function esc(str: string): string {
   return str
@@ -60,8 +59,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     ? truncate(post.content as string, 200)
     : "Check out this post on Mapier";
   const deepLink = `mapier://post/${postId}`;
-  const fallbackText = `${authorDisplay} shared a post on Mapier. Open the app to see it.`;
-
   const imageTag = imageUrl ? `<meta property="og:image" content="${esc(imageUrl)}" />` : "";
   const twitterImage = imageUrl ? `<meta name="twitter:image" content="${esc(imageUrl)}" />` : "";
 

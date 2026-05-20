@@ -9,7 +9,6 @@ const SUPABASE_KEY =
   "";
 
 const APP_STORE_ID = process.env.APP_STORE_ID ?? "";
-const APP_STORE_URL = APP_STORE_ID ? `https://apps.apple.com/app/mapier/id${APP_STORE_ID}` : "";
 
 function esc(str: string): string {
   return str
