@@ -15,8 +15,9 @@ const BACKEND_URL_FALLBACK = "https://dev.api.mapier.ai";
 
 export function getBackendBaseUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_BACKEND_URL;
-  if (fromEnv && fromEnv.length > 0) return fromEnv;
-  return BACKEND_URL_FALLBACK;
+  const base = fromEnv && fromEnv.length > 0 ? fromEnv : BACKEND_URL_FALLBACK;
+  // Strip trailing slash so `${base}/contacts/invite/...` never becomes `//contacts/...`.
+  return base.replace(/\/+$/, "");
 }
 
 export interface Inviter {
@@ -69,16 +70,12 @@ export async function getInvite(code: string): Promise<Inviter | null> {
     return null;
   }
 
-  // The contract is `{ inviter: { ... } }` but some backends return the inner
-  // object directly. Accept both shapes defensively — both still get caught
-  // by the field-shape check below.
-  const candidate =
-    payload && typeof payload === "object" && "inviter" in payload
-      ? (payload as { inviter: unknown }).inviter
-      : payload;
-
-  if (!candidate || typeof candidate !== "object") return null;
-  const obj = candidate as Record<string, unknown>;
+  // Contract is locked to `{ inviter: { username, display_name, avatar_url } }`.
+  // Validate the wrapper + each field shape before trusting it.
+  if (!payload || typeof payload !== "object" || !("inviter" in payload)) return null;
+  const inviter = (payload as { inviter: unknown }).inviter;
+  if (!inviter || typeof inviter !== "object") return null;
+  const obj = inviter as Record<string, unknown>;
   if (typeof obj.username !== "string" || typeof obj.display_name !== "string") {
     return null;
   }
