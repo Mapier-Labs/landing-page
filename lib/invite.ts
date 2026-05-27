@@ -11,6 +11,12 @@
 
 // Fallback matches the dev backend URL the rest of the team uses. Vercel envs
 // override this in prod/preview.
+//
+// IMPORTANT: `NEXT_PUBLIC_BACKEND_URL` MUST be set on every Vercel deployment
+// (prod + preview). When unset, requests fall through to the dev backend —
+// which is fine for `next dev` on a laptop, but in prod it silently routes
+// real users' invite lookups at dev's database. Verify the Vercel env before
+// shipping.
 const BACKEND_URL_FALLBACK = "https://dev.api.mapier.ai";
 
 export function getBackendBaseUrl(): string {
@@ -70,10 +76,14 @@ export async function getInvite(code: string): Promise<Inviter | null> {
     return null;
   }
 
-  // Contract is locked to `{ inviter: { username, display_name, avatar_url } }`.
-  // Validate the wrapper + each field shape before trusting it.
-  if (!payload || typeof payload !== "object" || !("inviter" in payload)) return null;
-  const inviter = (payload as { inviter: unknown }).inviter;
+  // Backend wraps every response in the standard envelope
+  //   { success: true, data: { inviter: { username, display_name, avatar_url } } }
+  // so we have to unwrap `data` before reaching for `inviter`. Validate each
+  // hop and each field shape before trusting the payload.
+  if (!payload || typeof payload !== "object") return null;
+  const data = (payload as { data?: unknown }).data;
+  if (!data || typeof data !== "object" || !("inviter" in data)) return null;
+  const inviter = (data as { inviter: unknown }).inviter;
   if (!inviter || typeof inviter !== "object") return null;
   const obj = inviter as Record<string, unknown>;
   if (typeof obj.username !== "string" || typeof obj.display_name !== "string") {

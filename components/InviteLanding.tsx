@@ -18,6 +18,11 @@ interface InviteLandingProps {
 // Reuse the same env precedence as `lib/invite.ts` but resolved at module load
 // for the client side. NEXT_PUBLIC_ vars are inlined at build time so this is
 // stable across renders.
+//
+// IMPORTANT: `NEXT_PUBLIC_BACKEND_URL` MUST be set on every Vercel deployment
+// (prod + preview). When unset, click POSTs fall through to the dev backend —
+// fine for `next dev` on a laptop, but in prod it would silently record real
+// users' clicks against dev's database. Verify the Vercel env before shipping.
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://dev.api.mapier.ai";
 
 // Store-URL strategy:
@@ -119,10 +124,9 @@ export default function InviteLanding({ code, inviter }: InviteLandingProps) {
     <main className="invite-page relative min-h-[100dvh] overflow-x-hidden bg-white">
       <PastelBackdrop />
 
-      {/* iOS Safari smart banner. Only useful while the App Store ID env var
-          is wired up — falls back to nothing so we never emit a bogus
-          `app-id=` attribute. */}
-      {APP_STORE_ID ? <meta name="apple-itunes-app" content={`app-id=${APP_STORE_ID}`} /> : null}
+      {/* The Safari smart-banner `<meta name="apple-itunes-app">` lives in
+          `app/i/[code]/page.tsx` via `metadata.other` so Next inlines it into
+          `<head>` — Safari ignores body-level instances. */}
 
       <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[402px] flex-col items-center px-6 pt-[88px] pb-[max(40px,env(safe-area-inset-bottom))]">
         {/* Avatar — circular, ~96px. Falls back to a name initial when the

@@ -21,6 +21,14 @@ import { getInvite } from "@/lib/invite";
 // Filed as an open question in the PR; left out of this commit to avoid
 // touching unrelated routes.
 
+// iOS Safari's smart app banner reads `<meta name="apple-itunes-app">` from
+// the document `<head>`. The component previously emitted it inside `<main>`,
+// which Safari ignores. Routing it through `metadata.other` makes Next inline
+// the tag into `<head>` server-side. Stays unset (no banner) when we don't
+// have a real App Store ID yet — better than emitting `app-id=` with an
+// empty value.
+const APP_STORE_ID = process.env.NEXT_PUBLIC_APP_STORE_ID ?? "";
+
 interface PageProps {
   // Next 16 App Router exposes route params as a Promise — must be awaited
   // before destructuring. See https://nextjs.org/docs/app/api-reference/file-conventions/page.
@@ -66,6 +74,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       images: inviter.avatar_url ? [inviter.avatar_url] : undefined,
     },
+    other: APP_STORE_ID ? { "apple-itunes-app": `app-id=${APP_STORE_ID}` } : undefined,
   };
 }
 
