@@ -7,7 +7,7 @@ export async function GET() {
       details: [
         {
           appID: "HV58968J2R.ai.mapier.app",
-          paths: ["/share/post/*", "/share/profile/*"],
+          paths: ["/share/post/*", "/share/profile/*", "/share/dazzi/*"],
         },
       ],
     },
