@@ -3,7 +3,14 @@
 import Image from "next/image";
 import { useState } from "react";
 import { ChevronRight, Loader2 } from "lucide-react";
-import { HomeButton, PastelBackdrop, Sparkle, StickyCTA, StickyCTASpacer } from "./_shared";
+import {
+  HomeButton,
+  PastelBackdrop,
+  PrimaryButton,
+  Sparkle,
+  StickyCTA,
+  StickyCTASpacer,
+} from "./_shared";
 
 interface NameEntryProps {
   /** Slug of the claimed character — used only to render the sticker thumbnail. */
@@ -139,12 +146,7 @@ export default function NameEntry({ characterSlug, phone, onSubmitted }: NameEnt
       </div>
 
       <StickyCTA>
-        <button
-          type="submit"
-          form="name-form"
-          disabled={!canSubmit}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#131311] px-[18px] py-3 font-nunito text-[16px] font-bold tracking-[-0.24px] text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
-        >
+        <PrimaryButton type="submit" form="name-form" disabled={!canSubmit}>
           {isSubmitting ? (
             <>
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -156,7 +158,7 @@ export default function NameEntry({ characterSlug, phone, onSubmitted }: NameEnt
               <ChevronRight className="h-5 w-5" />
             </>
           )}
-        </button>
+        </PrimaryButton>
       </StickyCTA>
     </main>
   );

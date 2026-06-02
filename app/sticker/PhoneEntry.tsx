@@ -4,7 +4,14 @@ import Image from "next/image";
 import { useState } from "react";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { ApiError, requestOtp } from "@/lib/api";
-import { HomeButton, PastelBackdrop, Sparkle, StickyCTA, StickyCTASpacer } from "./_shared";
+import {
+  HomeButton,
+  PastelBackdrop,
+  PrimaryButton,
+  Sparkle,
+  StickyCTA,
+  StickyCTASpacer,
+} from "./_shared";
 
 interface PhoneEntryProps {
   /** Slug of the rolled character — used only to render the sticker thumbnail. */
@@ -151,11 +158,10 @@ export default function PhoneEntry({ characterSlug, initialPhone, onSubmitted }:
       </div>
 
       <StickyCTA>
-        <button
+        <PrimaryButton
           type="submit"
           form="phone-form"
           disabled={!isPotentiallyValid || isSubmitting}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#131311] px-[18px] py-3 font-nunito text-[16px] font-bold tracking-[-0.24px] text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? (
             <>
@@ -168,7 +174,7 @@ export default function PhoneEntry({ characterSlug, initialPhone, onSubmitted }:
               <ChevronRight className="h-5 w-5" />
             </>
           )}
-        </button>
+        </PrimaryButton>
       </StickyCTA>
     </main>
   );

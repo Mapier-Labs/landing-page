@@ -4,8 +4,14 @@ import { Loader2, Share2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { getCharacter } from "@/lib/characters";
-import { HomeButton, PastelBackdrop, Sparkle } from "./_shared";
-import { StickyCTA, StickyCTASpacer } from "./_shared";
+import {
+  HomeButton,
+  PastelBackdrop,
+  PrimaryButton,
+  Sparkle,
+  StickyCTA,
+  StickyCTASpacer,
+} from "./_shared";
 import type { RevealCharacter } from "./CharacterReveal";
 
 interface ClaimSuccessProps {
@@ -160,12 +166,7 @@ export default function ClaimSuccess({ character }: ClaimSuccessProps) {
       </div>
 
       <StickyCTA>
-        <button
-          type="button"
-          onClick={handleShare}
-          disabled={shareState === "loading"}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#131311] px-[18px] py-3 font-nunito text-[16px] font-bold tracking-[-0.24px] text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-70"
-        >
+        <PrimaryButton onClick={handleShare} disabled={shareState === "loading"}>
           {shareState === "loading" ? (
             <>
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -177,7 +178,7 @@ export default function ClaimSuccess({ character }: ClaimSuccessProps) {
               Share to Story
             </>
           )}
-        </button>
+        </PrimaryButton>
       </StickyCTA>
     </main>
   );

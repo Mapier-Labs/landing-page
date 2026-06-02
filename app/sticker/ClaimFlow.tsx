@@ -16,6 +16,7 @@ import PhoneEntry from "./PhoneEntry";
 import OtpVerify from "./OtpVerify";
 import NameEntry from "./NameEntry";
 import ClaimSuccess from "./ClaimSuccess";
+import { PrimaryButton } from "./_shared";
 
 type Step = "reveal" | "phone" | "otp" | "name" | "success";
 
@@ -333,13 +334,11 @@ export default function ClaimFlow() {
                 <p className="mx-auto max-w-xs px-6 text-center font-nunito text-base font-bold text-[#131311]">
                   {rollError}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => void doRoll()}
-                  className="mt-6 rounded-full bg-[#131311] px-6 py-3 font-nunito text-base font-bold text-white transition-colors hover:bg-black"
-                >
-                  Try again
-                </button>
+                <div className="mt-6">
+                  <PrimaryButton fullWidth={false} onClick={() => void doRoll()}>
+                    Try again
+                  </PrimaryButton>
+                </div>
               </>
             ) : (
               <p className="font-nunito text-base font-bold text-[#797876]">Revealing…</p>

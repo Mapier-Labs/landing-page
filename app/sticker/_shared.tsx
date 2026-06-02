@@ -69,25 +69,169 @@ export function Sparkle({ size = 64, className }: { size?: number | string; clas
   );
 }
 
+/**
+ * Liquid-glass variant palette — mirrors the RN GLASS palette in
+ * mobile-frontend's FloatingPlusButton.tsx + Figma nodes 7490:56364 (Send,
+ * normal-light) and 7575:26797 (Important, gold). Dark variants mirror the
+ * structure with the dark-glass / navy hue.
+ */
+export type GlassVariant = "normal-light" | "normal-dark" | "important-light" | "important-dark";
+
+export const GLASS_PALETTES: Record<
+  GlassVariant,
+  {
+    fill: string;
+    border: string;
+    bottomInset: string;
+    sideLight: string;
+    text: string;
+    textShadow: string;
+    iconShadow: string;
+  }
+> = {
+  "normal-light": {
+    fill: "#f3f2f1",
+    border: "#c9c7c4",
+    bottomInset: "#dfdfdf",
+    sideLight: "rgba(255, 255, 255, 0.4)",
+    text: "#131311",
+    textShadow: "0.5px 0.5px 0 #ffffff",
+    iconShadow: "drop-shadow(0.5px 0.5px 0 rgba(255, 255, 255, 0.9))",
+  },
+  "normal-dark": {
+    fill: "#424242",
+    border: "#2b2b2b",
+    bottomInset: "#2b2b2b",
+    sideLight: "rgba(255, 255, 255, 0.1)",
+    text: "#ffffff",
+    textShadow: "0.5px 0.5px 0 rgba(0, 0, 0, 0.6)",
+    iconShadow: "drop-shadow(0.5px 0.5px 0 rgba(0, 0, 0, 0.6))",
+  },
+  "important-light": {
+    fill: "#fff6e2",
+    border: "#e3c291",
+    bottomInset: "#eddeb4",
+    sideLight: "rgba(255, 255, 255, 0.4)",
+    text: "#835300",
+    textShadow: "0.5px 0.5px 0 #ffffff",
+    iconShadow: "drop-shadow(0.5px 0.5px 0 rgba(255, 255, 255, 0.9))",
+  },
+  "important-dark": {
+    fill: "#2c3a5e",
+    border: "#1d2742",
+    bottomInset: "#1d2742",
+    sideLight: "rgba(255, 255, 255, 0.1)",
+    text: "#c8d6f5",
+    textShadow: "0.5px 0.5px 0 rgba(0, 0, 0, 0.6)",
+    iconShadow: "drop-shadow(0.5px 0.5px 0 rgba(0, 0, 0, 0.6))",
+  },
+};
+
+/**
+ * Liquid-glass primary button — pixel-exact reconstruction of the Send pill
+ * variant from Figma (file iNe6l0dUb3vqqaHZZCul6w, node 7490:56364 + its inner
+ * frames 7490:56360 / 7490:56366).
+ *
+ * The visual depth comes from FIVE layers nested in order, mirroring the
+ * original Figma structure exactly. Stacking them in JSX (vs. piling every
+ * shadow onto one element) lets the two inset shadows live on DIFFERENT
+ * bounding boxes — that's what gives the embossed pill its asymmetric
+ * read (bottom darkening spans the full pill width, side highlights are
+ * pinched to the narrower inner content row).
+ *
+ *   1. Outer <button>          1px stroke, rounded full, no fill
+ *   2. Frame B                 fill + drop-shadow 1/2/1 rgba(0,0,0,0.1)
+ *   3. Frame C (padded)        fill + px-[18px] py-[12px] gap-2 + text-shadow
+ *                              0.5/0.5/0 (no blur) + icon drop-shadow filter
+ *                              applied via [&_svg]:[filter:...]
+ *   4. Side-highlight overlay  inside Frame C, inset ±8/0/8 sideLight
+ *                              — bounds = Frame C's narrower inner box
+ *   5. Bottom-shadow overlay   inside Frame B, inset 0/-13/13.5 bottomInset
+ *                              — bounds = Frame B's full pill width
+ *
+ * `variant` switches the four palettes (normal-light/dark, important-
+ * light/dark). All shadow / color / typography values are 1:1 Figma — never
+ * amplify or tweak.
+ */
 export function PrimaryButton({
   children,
   type = "button",
   disabled,
   onClick,
+  form,
+  fullWidth = true,
+  variant = "normal-light",
 }: {
   children: React.ReactNode;
   type?: "button" | "submit";
   disabled?: boolean;
   onClick?: () => void;
+  form?: string;
+  /**
+   * When true (default) the button stretches to its container's width — used
+   * by the StickyCTA-mounted form buttons. Set false for inline call-sites
+   * (e.g. the ClaimFlow retry button) so the pill hugs its content like the
+   * Figma Send variant does.
+   */
+  fullWidth?: boolean;
+  variant?: GlassVariant;
 }) {
+  const p = GLASS_PALETTES[variant];
   return (
     <button
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
-      className="flex w-full items-center justify-center gap-2 rounded-full bg-[#131311] px-[18px] py-3 font-nunito text-[16px] font-bold tracking-[-0.24px] text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+      className={`${
+        fullWidth ? "block w-full" : "inline-block"
+      } rounded-full border bg-transparent p-0 transition-transform duration-150 ease-out hover:scale-[1.01] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100`}
+      style={
+        {
+          borderColor: p.border,
+          // CSS variable so the descendant `[&_svg]` selector below can
+          // inherit the icon shadow without each SVG needing its own filter.
+          ["--liquid-icon-shadow" as string]: p.iconShadow,
+        } as React.CSSProperties
+      }
     >
-      {children}
+      {/* Frame B — fill + drop shadow. 1:1 Figma. */}
+      <span
+        className={`relative block rounded-full ${fullWidth ? "w-full" : ""}`}
+        style={{
+          backgroundColor: p.fill,
+          filter: "drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.1))",
+        }}
+      >
+        {/* Frame C — padded inner row with content + text-shadow + icon
+            drop-shadow (applied to all <svg> descendants). 1:1 Figma. */}
+        <span
+          className={`relative flex items-center justify-center gap-2 rounded-full px-[18px] py-[12px] font-nunito text-[16px] font-bold tracking-[-0.24px] [&_svg]:[filter:var(--liquid-icon-shadow)] ${
+            fullWidth ? "w-full" : ""
+          }`}
+          style={{
+            backgroundColor: p.fill,
+            color: p.text,
+            textShadow: p.textShadow,
+          }}
+        >
+          <span className="relative z-10 inline-flex items-center gap-2">{children}</span>
+          {/* Side highlights — Frame C bounds. 1:1 Figma. */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-full"
+            style={{
+              boxShadow: `inset -8px 0px 8px 0px ${p.sideLight}, inset 8px 0px 8px 0px ${p.sideLight}`,
+            }}
+          />
+        </span>
+        {/* Bottom dark inset — Frame B bounds. 1:1 Figma. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-full"
+          style={{ boxShadow: `inset 0px -13px 13.5px 0px ${p.bottomInset}` }}
+        />
+      </span>
     </button>
   );
 }
