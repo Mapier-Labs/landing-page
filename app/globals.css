@@ -217,8 +217,16 @@ body.is-releasing {
   filter: drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.08));
 }
 
+/* The button's hover lift is the pill's OWN crisp 3D — translateY(-2px) +
+   directional box-shadow + the side-face "wall" revealed in the lift gap —
+   driven by `group-hover/pill` in app/sticker/_shared.tsx. Do NOT also grow the
+   draggable wrapper's soft drop-shadow on hover: that soft halo extends past
+   the pill and fires the instant the pointer enters the (slightly larger)
+   wrapper box, so it read as a two-stage effect (soft shadow halo first, THEN
+   the 3D). Pinning the wrapper shadow to its resting value on hover collapses
+   it to a single, unified 3D lift. */
 .draggable--btn:hover {
-  filter: drop-shadow(0px 4px 12px rgba(0, 0, 0, 0.14));
+  filter: drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.08));
 }
 
 .draggable--btn.is-grabbing {

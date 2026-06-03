@@ -77,18 +77,30 @@ export function Sparkle({ size = 64, className }: { size?: number | string; clas
  */
 export type GlassVariant = "normal-light" | "normal-dark" | "important-light" | "important-dark";
 
-export const GLASS_PALETTES: Record<
-  GlassVariant,
-  {
-    fill: string;
-    border: string;
-    bottomInset: string;
-    sideLight: string;
-    text: string;
-    textShadow: string;
-    iconShadow: string;
-  }
-> = {
+export interface GlassPalette {
+  fill: string;
+  border: string;
+  bottomInset: string;
+  sideLight: string;
+  text: string;
+  textShadow: string;
+  iconShadow: string;
+  /**
+   * Outer drop-shadow color for both resting and hover state. Light variants
+   * use Figma's `rgba(0,0,0,0.1)` exact. Dark variants use 0.4 alpha — on a
+   * dark fill a 10% black shadow vanishes so the hover lift wouldn't read.
+   */
+  dropShadowRgba: string;
+  /**
+   * "Back wall" — fills Frame A (outermost) behind the Frame B button surface.
+   * Visible only in the 2px hover-lift gap; reads as the dark side face of a
+   * 3D button rising. Without it, dark variants showed map/page background
+   * through the gap ("镂空", hollowed out).
+   */
+  wallColor: string;
+}
+
+export const GLASS_PALETTES: Record<GlassVariant, GlassPalette> = {
   "normal-light": {
     fill: "#f3f2f1",
     border: "#c9c7c4",
@@ -97,6 +109,10 @@ export const GLASS_PALETTES: Record<
     text: "#131311",
     textShadow: "0.5px 0.5px 0 #ffffff",
     iconShadow: "drop-shadow(0.5px 0.5px 0 rgba(255, 255, 255, 0.9))",
+    dropShadowRgba: "rgba(0, 0, 0, 0.1)",
+    // White variant wall — light grey just darker than the #f3f2f1 fill. The
+    // first pass at #a9a7a4 read as too harsh against the white surroundings.
+    wallColor: "#cdcbc8",
   },
   "normal-dark": {
     fill: "#424242",
@@ -106,6 +122,9 @@ export const GLASS_PALETTES: Record<
     text: "#ffffff",
     textShadow: "0.5px 0.5px 0 rgba(0, 0, 0, 0.6)",
     iconShadow: "drop-shadow(0.5px 0.5px 0 rgba(0, 0, 0, 0.6))",
+    dropShadowRgba: "rgba(0, 0, 0, 0.4)",
+    // User: 黑色要更深的黑色 — much darker than the #424242 fill.
+    wallColor: "#0a0a0a",
   },
   "important-light": {
     fill: "#fff6e2",
@@ -115,6 +134,9 @@ export const GLASS_PALETTES: Record<
     text: "#835300",
     textShadow: "0.5px 0.5px 0 #ffffff",
     iconShadow: "drop-shadow(0.5px 0.5px 0 rgba(255, 255, 255, 0.9))",
+    dropShadowRgba: "rgba(0, 0, 0, 0.1)",
+    // Darker gold to match the variant's brown text identity.
+    wallColor: "#a47a3a",
   },
   "important-dark": {
     fill: "#2c3a5e",
@@ -124,34 +146,104 @@ export const GLASS_PALETTES: Record<
     text: "#c8d6f5",
     textShadow: "0.5px 0.5px 0 rgba(0, 0, 0, 0.6)",
     iconShadow: "drop-shadow(0.5px 0.5px 0 rgba(0, 0, 0, 0.6))",
+    dropShadowRgba: "rgba(0, 0, 0, 0.4)",
+    // Much darker navy than #2c3a5e fill.
+    wallColor: "#0a1024",
   },
 };
 
 /**
- * Liquid-glass primary button — pixel-exact reconstruction of the Send pill
- * variant from Figma (file iNe6l0dUb3vqqaHZZCul6w, node 7490:56364 + its inner
- * frames 7490:56360 / 7490:56366).
+ * Inner pill renderer — frames B/C + the two inset overlays, the visual
+ * "body" of the Liquid Glass button. Both `PrimaryButton` (`<button>` form
+ * submits) and `LiquidGlassPill` (`<a>` link-style CTA in `LandingHero`)
+ * wrap this same body — there is exactly ONE source of truth for the
+ * hover physics, easing, palette wiring, and Figma 5-layer structure. Fix
+ * a hover bug here, both surfaces pick it up.
  *
- * The visual depth comes from FIVE layers nested in order, mirroring the
- * original Figma structure exactly. Stacking them in JSX (vs. piling every
- * shadow onto one element) lets the two inset shadows live on DIFFERENT
- * bounding boxes — that's what gives the embossed pill its asymmetric
- * read (bottom darkening spans the full pill width, side highlights are
- * pinched to the narrower inner content row).
+ * Pill anatomy (1:1 Figma node 7490:56364):
  *
- *   1. Outer <button>          1px stroke, rounded full, no fill
- *   2. Frame B                 fill + drop-shadow 1/2/1 rgba(0,0,0,0.1)
- *   3. Frame C (padded)        fill + px-[18px] py-[12px] gap-2 + text-shadow
- *                              0.5/0.5/0 (no blur) + icon drop-shadow filter
- *                              applied via [&_svg]:[filter:...]
- *   4. Side-highlight overlay  inside Frame C, inset ±8/0/8 sideLight
- *                              — bounds = Frame C's narrower inner box
- *   5. Bottom-shadow overlay   inside Frame B, inset 0/-13/13.5 bottomInset
- *                              — bounds = Frame B's full pill width
+ *   1. Outer wrapper (caller — <button> / <a>)  1px stroke, wallColor fill,
+ *                                               group/pill hover scope
+ *   2. Frame B (here)             fill + box-shadow 1/2/1 (CSS var driven)
+ *   3. Frame C (padded)           fill + px-[18px] py-[12px] gap-2 + text-shadow
+ *                                 + icon drop-shadow filter ([&_svg]:filter)
+ *   4. Side-highlight overlay     inset ±8/0/8 sideLight — Frame C bounds
+ *   5. Bottom-shadow overlay      inset 0/-13/13.5 bottomInset — Frame B bounds
  *
- * `variant` switches the four palettes (normal-light/dark, important-
- * light/dark). All shadow / color / typography values are 1:1 Figma — never
- * amplify or tweak.
+ * Hover physics:
+ *   transform: translateY(0) → translateY(-2px)
+ *   box-shadow: 1px 2px 1px → 1px 4px 1px  (Y offset only)
+ *
+ * Easing was previously `cubic-bezier(0.34, 1.56, 0.64, 1)` ("easeOutBack",
+ * peaks at y≈1.56) — visually the button overshot ~5% past its -2px target,
+ * then settled. Read on screen as two distinct motions ("button lifts →
+ * angle change → settles") even though it's one curve. Replaced with
+ * `cubic-bezier(0.2, 0.8, 0.2, 1)` — smooth ease-out, no overshoot, monotonic
+ * settle. The lift + shadow now register as ONE continuous motion to the eye.
+ */
+function PillBody({
+  children,
+  palette,
+  fullWidth,
+}: {
+  children: React.ReactNode;
+  palette: GlassPalette;
+  fullWidth: boolean;
+}) {
+  return (
+    <span
+      className={`relative block rounded-full transition-[transform,box-shadow] duration-[260ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] shadow-[1px_2px_1px_var(--pill-shadow-rgba)] group-hover/pill:shadow-[1px_4px_1px_var(--pill-shadow-rgba)] group-hover/pill:-translate-y-[2px] ${
+        fullWidth ? "w-full" : ""
+      }`}
+      style={{ backgroundColor: palette.fill }}
+    >
+      <span
+        className={`relative flex items-center justify-center gap-2 rounded-full px-[18px] py-[12px] font-nunito text-[16px] font-bold tracking-[-0.24px] [&_svg]:[filter:var(--liquid-icon-shadow)] ${
+          fullWidth ? "w-full" : ""
+        }`}
+        style={{
+          backgroundColor: palette.fill,
+          color: palette.text,
+          textShadow: palette.textShadow,
+        }}
+      >
+        <span className="relative z-10 inline-flex items-center gap-2">{children}</span>
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-full"
+          style={{
+            boxShadow: `inset -8px 0px 8px 0px ${palette.sideLight}, inset 8px 0px 8px 0px ${palette.sideLight}`,
+          }}
+        />
+      </span>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-full"
+        style={{ boxShadow: `inset 0px -13px 13.5px 0px ${palette.bottomInset}` }}
+      />
+    </span>
+  );
+}
+
+/** Outer wrapper style (border, wallColor, CSS vars) shared by both button
+ *  + anchor variants — same single source of truth for the pill chrome.
+ *  Returns a style object so callers can spread it on their own element. */
+export function pillWrapperStyle(palette: GlassPalette): React.CSSProperties {
+  return {
+    borderColor: palette.border,
+    // Wall color visible only in the 2px lift gap on hover — the side face
+    // of the 3D button rising. At rest, Frame B covers it.
+    backgroundColor: palette.wallColor,
+    ["--liquid-icon-shadow" as string]: palette.iconShadow,
+    ["--pill-shadow-rgba" as string]: palette.dropShadowRgba,
+  } as React.CSSProperties;
+}
+
+/**
+ * Liquid-glass primary button — `<button>` form-submit variant. The visual
+ * body comes from `<PillBody>`, the same component `LiquidGlassPill` (the
+ * `<a>` variant in LandingHero) uses — one source of truth for hover
+ * physics + palette wiring across both surfaces.
  */
 export function PrimaryButton({
   children,
@@ -167,12 +259,6 @@ export function PrimaryButton({
   disabled?: boolean;
   onClick?: () => void;
   form?: string;
-  /**
-   * When true (default) the button stretches to its container's width — used
-   * by the StickyCTA-mounted form buttons. Set false for inline call-sites
-   * (e.g. the ClaimFlow retry button) so the pill hugs its content like the
-   * Figma Send variant does.
-   */
   fullWidth?: boolean;
   variant?: GlassVariant;
 }) {
@@ -183,56 +269,50 @@ export function PrimaryButton({
       form={form}
       onClick={onClick}
       disabled={disabled}
-      className={`${
+      className={`group/pill ${
         fullWidth ? "block w-full" : "inline-block"
-      } rounded-full border bg-transparent p-0 transition-transform duration-150 ease-out hover:scale-[1.01] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100`}
-      style={
-        {
-          borderColor: p.border,
-          // CSS variable so the descendant `[&_svg]` selector below can
-          // inherit the icon shadow without each SVG needing its own filter.
-          ["--liquid-icon-shadow" as string]: p.iconShadow,
-        } as React.CSSProperties
-      }
+      } rounded-full border p-0 disabled:cursor-not-allowed disabled:opacity-50`}
+      style={pillWrapperStyle(p)}
     >
-      {/* Frame B — fill + drop shadow. 1:1 Figma. */}
-      <span
-        className={`relative block rounded-full ${fullWidth ? "w-full" : ""}`}
-        style={{
-          backgroundColor: p.fill,
-          filter: "drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.1))",
-        }}
-      >
-        {/* Frame C — padded inner row with content + text-shadow + icon
-            drop-shadow (applied to all <svg> descendants). 1:1 Figma. */}
-        <span
-          className={`relative flex items-center justify-center gap-2 rounded-full px-[18px] py-[12px] font-nunito text-[16px] font-bold tracking-[-0.24px] [&_svg]:[filter:var(--liquid-icon-shadow)] ${
-            fullWidth ? "w-full" : ""
-          }`}
-          style={{
-            backgroundColor: p.fill,
-            color: p.text,
-            textShadow: p.textShadow,
-          }}
-        >
-          <span className="relative z-10 inline-flex items-center gap-2">{children}</span>
-          {/* Side highlights — Frame C bounds. 1:1 Figma. */}
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-full"
-            style={{
-              boxShadow: `inset -8px 0px 8px 0px ${p.sideLight}, inset 8px 0px 8px 0px ${p.sideLight}`,
-            }}
-          />
-        </span>
-        {/* Bottom dark inset — Frame B bounds. 1:1 Figma. */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-full"
-          style={{ boxShadow: `inset 0px -13px 13.5px 0px ${p.bottomInset}` }}
-        />
-      </span>
+      <PillBody palette={p} fullWidth={fullWidth}>
+        {children}
+      </PillBody>
     </button>
+  );
+}
+
+/**
+ * Liquid-glass CTA pill — `<a>` href-driven variant for landing-hero CTAs
+ * ("Join waitlist", "Work with us"). Reuses `<PillBody>` — same body, same
+ * hover, only the outer element differs.
+ */
+export function LiquidGlassPill({
+  href,
+  children,
+  ariaLabel,
+  external,
+  variant = "normal-light",
+}: {
+  href: string;
+  children: React.ReactNode;
+  ariaLabel?: string;
+  external?: boolean;
+  variant?: GlassVariant;
+}) {
+  const p = GLASS_PALETTES[variant];
+  return (
+    <a
+      href={href}
+      aria-label={ariaLabel}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noopener noreferrer" : undefined}
+      className="group/pill btn--link inline-block rounded-full border p-0 no-underline"
+      style={pillWrapperStyle(p)}
+    >
+      <PillBody palette={p} fullWidth={false}>
+        {children}
+      </PillBody>
+    </a>
   );
 }
 
