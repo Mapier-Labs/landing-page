@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 interface Spring {
   pos: number;
@@ -20,7 +20,7 @@ export function MapiHat({ size = 160, skipIntro = false }: { size?: number; skip
   const tokRef = useRef(0);
   const idleRafRef = useRef<number | null>(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const hatGroup = hatGroupRef.current;
     const eyesG = eyesRef.current;
     const pl = plRef.current;

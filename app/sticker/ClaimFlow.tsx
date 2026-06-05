@@ -95,19 +95,41 @@ function computeInitialState(
   devOverride: Step | "welcome" | "loading" | null,
   devCharacter: RevealCharacter | null
 ): InitialState {
+  // useSearchParams() may not resolve synchronously on the first render inside
+  // a Suspense boundary. Read window.location.search directly as the source of
+  // truth so the lazy useState initializer always sees the correct step param.
+  let effectiveOverride = devOverride;
+  if (
+    process.env.NODE_ENV === "development" &&
+    !effectiveOverride &&
+    typeof window !== "undefined"
+  ) {
+    const raw = new URLSearchParams(window.location.search).get("step");
+    if (
+      raw === "phone" ||
+      raw === "otp" ||
+      raw === "name" ||
+      raw === "success" ||
+      raw === "welcome" ||
+      raw === "loading"
+    ) {
+      effectiveOverride = raw;
+    }
+  }
+
   // `?step=loading` forces the hat loading screen for visual QA.
-  if (devOverride === "loading") {
+  if (effectiveOverride === "loading") {
     return { step: "reveal", rolled: null, claimed: null, welcomeBack: false, needsRoll: false };
   }
   // `?character=` short-circuits the roll regardless of step. When combined
   // with `?step=success` it shows the success screen with that character.
   const stub = devCharacter ?? DEV_STUB;
-  if (devOverride) {
+  if (effectiveOverride) {
     return {
-      step: devOverride === "welcome" ? "reveal" : (devOverride as Step),
+      step: effectiveOverride === "welcome" ? "reveal" : (effectiveOverride as Step),
       rolled: stub,
       claimed: stub,
-      welcomeBack: devOverride === "welcome",
+      welcomeBack: effectiveOverride === "welcome",
       needsRoll: false,
     };
   }
@@ -160,9 +182,10 @@ function computeInitialState(
 
 interface ClaimFlowProps {
   onLoadingVisibleChange?: (visible: boolean) => void;
+  onRollErrorChange?: (error: string | null, retry: () => void) => void;
 }
 
-export default function ClaimFlow({ onLoadingVisibleChange }: ClaimFlowProps = {}) {
+export default function ClaimFlow({ onLoadingVisibleChange, onRollErrorChange }: ClaimFlowProps = {}) {
   const devOverride = useDevStepOverride();
   const devCharacter = useDevCharacterOverride();
 
@@ -230,6 +253,14 @@ export default function ClaimFlow({ onLoadingVisibleChange }: ClaimFlowProps = {
 
   useEffect(() => {
     if (!initial.needsRoll || rollFiredRef.current) return;
+    // Belt-and-suspenders: never fire the real roll when the dev loading preview
+    // is active, regardless of how initial.needsRoll ended up being computed.
+    if (
+      process.env.NODE_ENV === "development" &&
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("step") === "loading"
+    )
+      return;
     rollFiredRef.current = true;
     // doRoll is the canonical "fetch on mount" path. The setState calls inside
     // happen *after* an async network round-trip, not synchronously, so the
@@ -332,38 +363,24 @@ export default function ClaimFlow({ onLoadingVisibleChange }: ClaimFlowProps = {
   const goToSuccessFromName = useCallback(() => setStep("success"), []);
 
   // Hat overlay is owned by StickerPageShell — sync before paint so cookie
-  // restores skip the loader without a one-frame flash.
-  const showRollLoading = step === "reveal" && !rolled && !rollError;
+  // restores skip the loader without a one-frame flash. Keep the overlay
+  // visible during errors too so the hat stays on screen alongside the retry.
+  const showRollLoading = step === "reveal" && !rolled;
 
   useLayoutEffect(() => {
     onLoadingVisibleChange?.(showRollLoading);
   }, [showRollLoading, onLoadingVisibleChange]);
 
+  useLayoutEffect(() => {
+    onRollErrorChange?.(rollError, doRoll);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rollError, onRollErrorChange]);
+
   // ---------- Render ----------
 
   if (step === "reveal") {
     // Initial loading state — first roll hasn't returned yet. Overlay handles UI.
-    if (!rolled) {
-      if (rollError) {
-        return (
-          <main className="relative flex min-h-[100dvh] flex-col items-center justify-center bg-white">
-            <div className="text-center">
-              <p className="mx-auto max-w-xs px-6 text-center font-nunito text-base font-bold text-[#131311]">
-                {rollError}
-              </p>
-              <button
-                type="button"
-                onClick={() => void doRoll()}
-                className="mt-6 rounded-full bg-[#131311] px-6 py-3 font-nunito text-base font-bold text-white transition-colors hover:bg-black"
-              >
-                Try again
-              </button>
-            </div>
-          </main>
-        );
-      }
-      return null;
-    }
+    if (!rolled) return null;
 
     return (
       <div className={isCorrecting ? "transition-opacity duration-300 opacity-40" : undefined}>
