@@ -13,7 +13,7 @@ const nunito = Nunito({
 // font-face declaration so any Tailwind font-weight class resolves to it.
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://mapier.ai"),
+  metadataBase: new URL("https://www.mapier.ai"),
   title: "Mapier - Live Map of Social & Local Life",
   description:
     "Mapier is the AI personalized live map of social and local life. Discover what's happening around you, meet people you vibe with, explore local businesses, and leave creative doodles across the city.",
@@ -72,8 +72,8 @@ const jsonLd = {
     {
       "@type": "Organization",
       name: "Mapier",
-      url: "https://mapier.ai",
-      logo: "https://mapier.ai/icon.png",
+      url: "https://www.mapier.ai",
+      logo: "https://www.mapier.ai/icon.png",
       sameAs: ["https://www.linkedin.com/company/mapier-labs/"],
       description:
         "Mapier is the AI personalized live map of social and local life. A geo-location social app to discover what's happening around you and connect with people you vibe with.",
@@ -81,7 +81,7 @@ const jsonLd = {
     {
       "@type": "WebSite",
       name: "Mapier",
-      url: "https://mapier.ai",
+      url: "https://www.mapier.ai",
     },
     {
       "@type": "SoftwareApplication",

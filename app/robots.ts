@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: "/api/",
     },
-    sitemap: "https://mapier.ai/sitemap.xml",
+    sitemap: "https://www.mapier.ai/sitemap.xml",
   };
 }
