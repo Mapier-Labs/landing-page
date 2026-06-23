@@ -1,7 +1,11 @@
 // Thin fetch wrapper for the Mapier QR-claim API.
 // Backend is being built in parallel — keep this in sync with the locked contract.
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
+// Strip any trailing slash so we don't emit `//path` when joined with a
+// leading-slash path below. A trailing slash in the env var (e.g.
+// `https://dev.api.mapier.ai/`) otherwise produces `…//character/roll`, which
+// the backend router rejects as "Route not found".
+const BACKEND_URL = (process.env.NEXT_PUBLIC_BACKEND_URL ?? "").replace(/\/+$/, "");
 
 export type ApiErrorCode =
   | "INVALID_PHONE"
