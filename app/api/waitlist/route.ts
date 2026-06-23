@@ -46,30 +46,64 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Invalid phone number format." }, { status: 400 });
       }
 
-      // Phone + name → upsert. The first ClaimFlow call already inserted
-      // the phone row, so this back-fills `name`. Onconflict=phone makes
-      // it idempotent if the order is reversed or the first call is lost.
+      // Phone + name → back-fill the name onto the existing phone row.
+      //
+      // We deliberately do NOT use `upsert({...}, { onConflict: "phone" })`
+      // here: the `waitlist.phone` column has no UNIQUE constraint, so
+      // ON CONFLICT (phone) fails with Postgres 42P10 ("no unique or exclusion
+      // constraint matching the ON CONFLICT specification"). That made every
+      // name submission 500 and silently drop the name.
+      //
+      // Instead we UPDATE by phone (the row was already inserted by ClaimFlow's
+      // first call), and if no row matched yet — a lost/late first call or a
+      // blocked UPDATE policy — we INSERT the row with the name attached so it
+      // is never lost.
       if (hasPhoneName) {
         const fullName = composeFullName(rawFirstName, rawLastName);
-        const { error } = await supabase
+
+        const { data: updated, error: updateError } = await supabase
           .from("waitlist")
-          .upsert({ phone: rawPhone, name: fullName }, { onConflict: "phone" });
-        if (error) {
-          // Schema not ready (phone column missing). Degrade gracefully
+          .update({ name: fullName })
+          .eq("phone", rawPhone)
+          .select("id");
+
+        if (updateError) {
+          // Schema not ready (phone/name column missing). Degrade gracefully
           // so the QR flow doesn't fail post-claim.
-          if (error.code === "42703" || error.code === "23502") {
-            console.warn("Waitlist schema not ready for name upsert:", error.message);
+          if (updateError.code === "42703" || updateError.code === "23502") {
+            console.warn("Waitlist schema not ready for name update:", updateError.message);
             return NextResponse.json(
               { success: true, message: "Skipped (schema pending)." },
               { status: 200 }
             );
           }
-          console.error("Supabase upsert error (phone + name):", error);
+          console.error("Supabase update error (phone + name):", updateError);
           return NextResponse.json({ error: "Failed to save name" }, { status: 500 });
         }
+
+        // No existing row carried the name — insert one. A duplicate phone
+        // (23505) just means the first call landed in between; treat as success.
+        if (!updated || updated.length === 0) {
+          const { error: insertError } = await supabase
+            .from("waitlist")
+            .insert({ phone: rawPhone, name: fullName });
+          if (insertError && insertError.code !== "23505") {
+            if (insertError.code === "42703" || insertError.code === "23502") {
+              console.warn("Waitlist schema not ready for name insert:", insertError.message);
+              return NextResponse.json(
+                { success: true, message: "Skipped (schema pending)." },
+                { status: 200 }
+              );
+            }
+            console.error("Supabase insert error (phone + name fallback):", insertError);
+            return NextResponse.json({ error: "Failed to save name" }, { status: 500 });
+          }
+        }
+
         console.log("Waitlist name capture (phone):", {
           phone: rawPhone,
           name: fullName,
+          matchedExisting: Boolean(updated && updated.length > 0),
           timestamp: new Date().toISOString(),
         });
         return NextResponse.json({ success: true, message: "Name saved." }, { status: 200 });
