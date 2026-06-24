@@ -89,12 +89,7 @@ export function LandingHero() {
           transform: "rotate(0deg)",
         }}
       >
-        <a
-          href={LINKEDIN_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn--link"
-        >
+        <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" className="btn btn--link">
           Work with us
         </a>
       </Draggable>
