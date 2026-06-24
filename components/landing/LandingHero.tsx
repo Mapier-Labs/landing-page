@@ -93,7 +93,7 @@ export function LandingHero() {
           href={LINKEDIN_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn btn--secondary btn--link"
+          className="btn btn--link"
         >
           Work with us
         </a>

@@ -102,7 +102,7 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
             <p className="waitlist-card__subtitle">
               We&apos;ll reach out when it&apos;s your turn.
             </p>
-            <button type="button" className="waitlist-card__done" onClick={onClose}>
+            <button type="button" className="btn btn--cta waitlist-card__done" onClick={onClose}>
               Done
             </button>
           </>
@@ -133,7 +133,7 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="waitlist-card__submit"
+                className="btn btn--cta waitlist-card__submit"
               >
                 {status === "loading" ? "Submitting..." : "Join"}
               </button>
