@@ -13,8 +13,15 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { supabase } from "@/lib/supabase";
 import { saveWaitlistPhoneName } from "@/lib/waitlistNameCapture";
 
-function composeNameForLog(first: string, last: string): string {
-  return last.length > 0 ? `${first} ${last}` : first;
+function redactPhoneForLog(phone: string): string {
+  const visibleSuffix = phone.slice(-4);
+  return `${phone.slice(0, 2)}***${visibleSuffix}`;
+}
+
+function redactEmailForLog(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  return `${local.slice(0, 1)}***@${domain}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -76,8 +83,7 @@ export async function POST(request: NextRequest) {
         }
 
         console.log("Waitlist name capture (phone):", {
-          phone: rawPhone,
-          name: composeNameForLog(rawFirstName, rawLastName),
+          phone: redactPhoneForLog(rawPhone),
           matchedExisting: saved.matchedExisting,
           timestamp: new Date().toISOString(),
         });
@@ -111,7 +117,7 @@ export async function POST(request: NextRequest) {
       }
 
       console.log("Waitlist signup (phone):", {
-        phone: rawPhone,
+        phone: redactPhoneForLog(rawPhone),
         timestamp: new Date().toISOString(),
       });
       return NextResponse.json(
@@ -146,8 +152,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("Waitlist signup (email):", {
-      email: rawEmail,
-      name: rawName,
+      email: redactEmailForLog(rawEmail),
       timestamp: new Date().toISOString(),
     });
     return NextResponse.json(
