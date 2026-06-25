@@ -185,7 +185,10 @@ interface ClaimFlowProps {
   onRollErrorChange?: (error: string | null, retry: () => void) => void;
 }
 
-export default function ClaimFlow({ onLoadingVisibleChange, onRollErrorChange }: ClaimFlowProps = {}) {
+export default function ClaimFlow({
+  onLoadingVisibleChange,
+  onRollErrorChange,
+}: ClaimFlowProps = {}) {
   const devOverride = useDevStepOverride();
   const devCharacter = useDevCharacterOverride();
 

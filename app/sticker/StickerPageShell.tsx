@@ -26,10 +26,7 @@ export default function StickerPageShell() {
           role="status"
           aria-label={rollError ? "Something went wrong" : "Revealing your character"}
         >
-          <StickerLoadingContent
-            error={rollError}
-            onRetry={retryFn ?? undefined}
-          />
+          <StickerLoadingContent error={rollError} onRetry={retryFn ?? undefined} />
         </div>
       )}
       <Suspense fallback={null}>

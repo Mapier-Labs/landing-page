@@ -30,4 +30,3 @@ export function StickerLoadingContent({ error, onRetry }: StickerLoadingContentP
     </div>
   );
 }
-
