@@ -9,10 +9,19 @@
 //   2. After the NameEntry screen — `{phone, first_name, last_name?}`,
 //      back-fills the name onto the same row (upsert by phone).
 import { NextRequest, NextResponse } from "next/server";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { supabase } from "@/lib/supabase";
+import { saveWaitlistPhoneName } from "@/lib/waitlistNameCapture";
 
-function composeFullName(first: string, last: string): string {
-  return last.length > 0 ? `${first} ${last}` : first;
+function redactPhoneForLog(phone: string): string {
+  const visibleSuffix = phone.slice(-4);
+  return `${phone.slice(0, 2)}***${visibleSuffix}`;
+}
+
+function redactEmailForLog(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  return `${local.slice(0, 1)}***@${domain}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -46,30 +55,36 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Invalid phone number format." }, { status: 400 });
       }
 
-      // Phone + name → upsert. The first ClaimFlow call already inserted
-      // the phone row, so this back-fills `name`. Onconflict=phone makes
-      // it idempotent if the order is reversed or the first call is lost.
+      // Phone + name → back-fill the name onto the existing phone row.
+      //
+      // The table intentionally lets anon INSERT but not UPDATE/SELECT. Use a
+      // server-only service-role client for this back-fill so the API does not
+      // return a false success while RLS silently blocks the update.
       if (hasPhoneName) {
-        const fullName = composeFullName(rawFirstName, rawLastName);
-        const { error } = await supabase
-          .from("waitlist")
-          .upsert({ phone: rawPhone, name: fullName }, { onConflict: "phone" });
-        if (error) {
-          // Schema not ready (phone column missing). Degrade gracefully
+        const saved = await saveWaitlistPhoneName(
+          getSupabaseAdmin(),
+          rawPhone,
+          rawFirstName,
+          rawLastName
+        );
+
+        if (!saved.ok) {
+          // Schema not ready (phone/name column missing). Degrade gracefully
           // so the QR flow doesn't fail post-claim.
-          if (error.code === "42703" || error.code === "23502") {
-            console.warn("Waitlist schema not ready for name upsert:", error.message);
+          if (saved.error.code === "42703" || saved.error.code === "23502") {
+            console.warn("Waitlist schema not ready for name capture:", saved.error.message);
             return NextResponse.json(
               { success: true, message: "Skipped (schema pending)." },
               { status: 200 }
             );
           }
-          console.error("Supabase upsert error (phone + name):", error);
+          console.error("Supabase error (phone + name):", saved.error);
           return NextResponse.json({ error: "Failed to save name" }, { status: 500 });
         }
+
         console.log("Waitlist name capture (phone):", {
-          phone: rawPhone,
-          name: fullName,
+          phone: redactPhoneForLog(rawPhone),
+          matchedExisting: saved.matchedExisting,
           timestamp: new Date().toISOString(),
         });
         return NextResponse.json({ success: true, message: "Name saved." }, { status: 200 });
@@ -102,7 +117,7 @@ export async function POST(request: NextRequest) {
       }
 
       console.log("Waitlist signup (phone):", {
-        phone: rawPhone,
+        phone: redactPhoneForLog(rawPhone),
         timestamp: new Date().toISOString(),
       });
       return NextResponse.json(
@@ -137,8 +152,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("Waitlist signup (email):", {
-      email: rawEmail,
-      name: rawName,
+      email: redactEmailForLog(rawEmail),
       timestamp: new Date().toISOString(),
     });
     return NextResponse.json(
