@@ -9,9 +9,11 @@
 //   2. After the NameEntry screen — `{phone, first_name, last_name?}`,
 //      back-fills the name onto the same row (upsert by phone).
 import { NextRequest, NextResponse } from "next/server";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { supabase } from "@/lib/supabase";
+import { saveWaitlistPhoneName } from "@/lib/waitlistNameCapture";
 
-function composeFullName(first: string, last: string): string {
+function composeNameForLog(first: string, last: string): string {
   return last.length > 0 ? `${first} ${last}` : first;
 }
 
@@ -48,62 +50,35 @@ export async function POST(request: NextRequest) {
 
       // Phone + name → back-fill the name onto the existing phone row.
       //
-      // We deliberately do NOT use `upsert({...}, { onConflict: "phone" })`
-      // here: the `waitlist.phone` column has no UNIQUE constraint, so
-      // ON CONFLICT (phone) fails with Postgres 42P10 ("no unique or exclusion
-      // constraint matching the ON CONFLICT specification"). That made every
-      // name submission 500 and silently drop the name.
-      //
-      // Instead we UPDATE by phone (the row was already inserted by ClaimFlow's
-      // first call), and if no row matched yet — a lost/late first call or a
-      // blocked UPDATE policy — we INSERT the row with the name attached so it
-      // is never lost.
+      // The table intentionally lets anon INSERT but not UPDATE/SELECT. Use a
+      // server-only service-role client for this back-fill so the API does not
+      // return a false success while RLS silently blocks the update.
       if (hasPhoneName) {
-        const fullName = composeFullName(rawFirstName, rawLastName);
+        const saved = await saveWaitlistPhoneName(
+          getSupabaseAdmin(),
+          rawPhone,
+          rawFirstName,
+          rawLastName
+        );
 
-        const { data: updated, error: updateError } = await supabase
-          .from("waitlist")
-          .update({ name: fullName })
-          .eq("phone", rawPhone)
-          .select("id");
-
-        if (updateError) {
+        if (!saved.ok) {
           // Schema not ready (phone/name column missing). Degrade gracefully
           // so the QR flow doesn't fail post-claim.
-          if (updateError.code === "42703" || updateError.code === "23502") {
-            console.warn("Waitlist schema not ready for name update:", updateError.message);
+          if (saved.error.code === "42703" || saved.error.code === "23502") {
+            console.warn("Waitlist schema not ready for name capture:", saved.error.message);
             return NextResponse.json(
               { success: true, message: "Skipped (schema pending)." },
               { status: 200 }
             );
           }
-          console.error("Supabase update error (phone + name):", updateError);
+          console.error("Supabase error (phone + name):", saved.error);
           return NextResponse.json({ error: "Failed to save name" }, { status: 500 });
-        }
-
-        // No existing row carried the name — insert one. A duplicate phone
-        // (23505) just means the first call landed in between; treat as success.
-        if (!updated || updated.length === 0) {
-          const { error: insertError } = await supabase
-            .from("waitlist")
-            .insert({ phone: rawPhone, name: fullName });
-          if (insertError && insertError.code !== "23505") {
-            if (insertError.code === "42703" || insertError.code === "23502") {
-              console.warn("Waitlist schema not ready for name insert:", insertError.message);
-              return NextResponse.json(
-                { success: true, message: "Skipped (schema pending)." },
-                { status: 200 }
-              );
-            }
-            console.error("Supabase insert error (phone + name fallback):", insertError);
-            return NextResponse.json({ error: "Failed to save name" }, { status: 500 });
-          }
         }
 
         console.log("Waitlist name capture (phone):", {
           phone: rawPhone,
-          name: fullName,
-          matchedExisting: Boolean(updated && updated.length > 0),
+          name: composeNameForLog(rawFirstName, rawLastName),
+          matchedExisting: saved.matchedExisting,
           timestamp: new Date().toISOString(),
         });
         return NextResponse.json({ success: true, message: "Name saved." }, { status: 200 });
