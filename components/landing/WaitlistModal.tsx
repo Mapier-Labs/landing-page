@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { MapiHat } from "./MapiHat";
 
 interface WaitlistModalProps {
   open: boolean;
@@ -96,7 +97,12 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
             <path d="m6 6 12 12" />
           </svg>
         </button>
-        {status === "success" ? (
+        {status === "loading" ? (
+          <div className="waitlist-card__loading">
+            <MapiHat size={160} skipIntro />
+            <p className="waitlist-card__loading-text">Hold tight…</p>
+          </div>
+        ) : status === "success" ? (
           <>
             <p className="waitlist-card__title">You&apos;re on the list!</p>
             <p className="waitlist-card__subtitle">
@@ -130,12 +136,8 @@ export function WaitlistModal({ open, onClose }: WaitlistModalProps) {
                 />
               </div>
               {errorMsg && <p className="waitlist-card__error">{errorMsg}</p>}
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="btn btn--cta waitlist-card__submit"
-              >
-                {status === "loading" ? "Submitting..." : "Join"}
+              <button type="submit" className="btn btn--cta waitlist-card__submit">
+                Join
               </button>
             </form>
           </>

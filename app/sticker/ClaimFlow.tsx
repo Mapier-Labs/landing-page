@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ApiError, rollCharacter } from "@/lib/api";
 import {
@@ -22,7 +22,7 @@ type Step = "reveal" | "phone" | "otp" | "name" | "success";
 // Dev-only step override: in development, ?step=phone|otp|name|success jumps
 // the flow forward for visual QA. Production users always start at 'reveal'.
 // We also accept ?step=welcome to force the returning-user reveal copy.
-function useDevStepOverride(): Step | "welcome" | null {
+function useDevStepOverride(): Step | "welcome" | "loading" | null {
   const params = useSearchParams();
   if (process.env.NODE_ENV !== "development") return null;
   const requested = params.get("step");
@@ -31,7 +31,8 @@ function useDevStepOverride(): Step | "welcome" | null {
     requested === "otp" ||
     requested === "name" ||
     requested === "success" ||
-    requested === "welcome"
+    requested === "welcome" ||
+    requested === "loading"
   ) {
     return requested;
   }
@@ -91,18 +92,44 @@ interface InitialState {
 // `react-hooks/set-state-in-effect` cascade that would otherwise fire if we
 // set the same state imperatively inside a `useEffect`.
 function computeInitialState(
-  devOverride: Step | "welcome" | null,
+  devOverride: Step | "welcome" | "loading" | null,
   devCharacter: RevealCharacter | null
 ): InitialState {
+  // useSearchParams() may not resolve synchronously on the first render inside
+  // a Suspense boundary. Read window.location.search directly as the source of
+  // truth so the lazy useState initializer always sees the correct step param.
+  let effectiveOverride = devOverride;
+  if (
+    process.env.NODE_ENV === "development" &&
+    !effectiveOverride &&
+    typeof window !== "undefined"
+  ) {
+    const raw = new URLSearchParams(window.location.search).get("step");
+    if (
+      raw === "phone" ||
+      raw === "otp" ||
+      raw === "name" ||
+      raw === "success" ||
+      raw === "welcome" ||
+      raw === "loading"
+    ) {
+      effectiveOverride = raw;
+    }
+  }
+
+  // `?step=loading` forces the hat loading screen for visual QA.
+  if (effectiveOverride === "loading") {
+    return { step: "reveal", rolled: null, claimed: null, welcomeBack: false, needsRoll: false };
+  }
   // `?character=` short-circuits the roll regardless of step. When combined
   // with `?step=success` it shows the success screen with that character.
   const stub = devCharacter ?? DEV_STUB;
-  if (devOverride) {
+  if (effectiveOverride) {
     return {
-      step: devOverride === "welcome" ? "reveal" : devOverride,
+      step: effectiveOverride === "welcome" ? "reveal" : (effectiveOverride as Step),
       rolled: stub,
       claimed: stub,
-      welcomeBack: devOverride === "welcome",
+      welcomeBack: effectiveOverride === "welcome",
       needsRoll: false,
     };
   }
@@ -153,7 +180,15 @@ function computeInitialState(
   return { step: "reveal", rolled: null, claimed: null, welcomeBack: false, needsRoll: true };
 }
 
-export default function ClaimFlow() {
+interface ClaimFlowProps {
+  onLoadingVisibleChange?: (visible: boolean) => void;
+  onRollErrorChange?: (error: string | null, retry: () => void) => void;
+}
+
+export default function ClaimFlow({
+  onLoadingVisibleChange,
+  onRollErrorChange,
+}: ClaimFlowProps = {}) {
   const devOverride = useDevStepOverride();
   const devCharacter = useDevCharacterOverride();
 
@@ -192,18 +227,11 @@ export default function ClaimFlow() {
 
   const doRoll = useCallback(async () => {
     setRollError(null);
-    try {
-      const res = await rollCharacter();
-      const character: RevealCharacter = {
-        character_slug: res.character_slug,
-        tier: res.tier,
-        rarity_label: res.rarity_label,
-      };
-      // Persist both the token (for /claim) and the reveal payload (so refresh
-      // shows the same character without burning another roll).
-      writePendingPayload(res.pending_token, character);
-      setRolled(character);
-    } catch (err) {
+    // allSettled ensures the 700ms hat animation always plays, even if the API
+    // fails immediately — Promise.all would reject early and skip the delay.
+    const [rollResult] = await Promise.allSettled([rollCharacter(), sleep(700)]);
+    if (rollResult.status === "rejected") {
+      const err = rollResult.reason;
       setRollError(
         err instanceof ApiError
           ? err.code === "NETWORK_ERROR"
@@ -211,7 +239,16 @@ export default function ClaimFlow() {
             : err.message
           : "Couldn't reveal your character. Try again in a moment."
       );
+      return;
     }
+    const res = rollResult.value;
+    const character: RevealCharacter = {
+      character_slug: res.character_slug,
+      tier: res.tier,
+      rarity_label: res.rarity_label,
+    };
+    writePendingPayload(res.pending_token, character);
+    setRolled(character);
   }, []);
 
   // Guard: don't double-fire `doRoll` on React 19 strict-mode-style remounts.
@@ -219,6 +256,14 @@ export default function ClaimFlow() {
 
   useEffect(() => {
     if (!initial.needsRoll || rollFiredRef.current) return;
+    // Belt-and-suspenders: never fire the real roll when the dev loading preview
+    // is active, regardless of how initial.needsRoll ended up being computed.
+    if (
+      process.env.NODE_ENV === "development" &&
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("step") === "loading"
+    )
+      return;
     rollFiredRef.current = true;
     // doRoll is the canonical "fetch on mount" path. The setState calls inside
     // happen *after* an async network round-trip, not synchronously, so the
@@ -320,34 +365,25 @@ export default function ClaimFlow() {
   // their claimed character.
   const goToSuccessFromName = useCallback(() => setStep("success"), []);
 
+  // Hat overlay is owned by StickerPageShell — sync before paint so cookie
+  // restores skip the loader without a one-frame flash. Keep the overlay
+  // visible during errors too so the hat stays on screen alongside the retry.
+  const showRollLoading = step === "reveal" && !rolled;
+
+  useLayoutEffect(() => {
+    onLoadingVisibleChange?.(showRollLoading);
+  }, [showRollLoading, onLoadingVisibleChange]);
+
+  useLayoutEffect(() => {
+    onRollErrorChange?.(rollError, doRoll);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rollError, onRollErrorChange]);
+
   // ---------- Render ----------
 
   if (step === "reveal") {
-    // Initial loading state — first roll hasn't returned yet.
-    if (!rolled) {
-      return (
-        <main className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-white">
-          <div className="text-center">
-            {rollError ? (
-              <>
-                <p className="mx-auto max-w-xs px-6 text-center font-nunito text-base font-bold text-[#131311]">
-                  {rollError}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => void doRoll()}
-                  className="mt-6 rounded-full bg-[#131311] px-6 py-3 font-nunito text-base font-bold text-white transition-colors hover:bg-black"
-                >
-                  Try again
-                </button>
-              </>
-            ) : (
-              <p className="font-nunito text-base font-bold text-[#797876]">Revealing…</p>
-            )}
-          </div>
-        </main>
-      );
-    }
+    // Initial loading state — first roll hasn't returned yet. Overlay handles UI.
+    if (!rolled) return null;
 
     return (
       <div className={isCorrecting ? "transition-opacity duration-300 opacity-40" : undefined}>
