@@ -1302,3 +1302,91 @@ html.page-scrollable body {
     animation: none !important;
   }
 }
+
+/* ─── Friend invite landing (/i/[code]) ───
+ *
+ * Visual language matches the /sticker flow: blurred map backdrop, white
+ * card-on-pastel feel, sticker-text headline. The avatar gets a soft halo
+ * + white ring so it reads as a sticker badge floating over the backdrop.
+ */
+.invite-page {
+  /* Force scroll so short phones can reach the store buttons even with the
+     iOS Safari toolbar consuming bottom px. The page-scrollable class on
+     <html> (toggled in the effect) handles the actual overflow. */
+  cursor: default;
+}
+
+.invite-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--color-bg);
+  /* Outer ring uses a soft drop shadow so the avatar reads as a sticker.
+     `filter: drop-shadow` rather than `box-shadow` because the rounded
+     <img> inside is what defines the silhouette. */
+  box-shadow:
+    0 0 0 4px var(--color-bg),
+    0 8px 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.invite-avatar__fallback {
+  font-size: 44px;
+  line-height: 1;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.invite-store-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: 16px;
+  background: #131311;
+  color: #ffffff;
+  text-decoration: none;
+  font-family: var(--font-nunito);
+  font-weight: 700;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.2s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14);
+}
+
+.invite-store-btn:hover {
+  background: #000000;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+}
+
+.invite-store-btn:active {
+  transform: scale(0.98);
+}
+
+.invite-store-btn__label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.invite-store-btn__top {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+  text-transform: uppercase;
+}
+
+.invite-store-btn__bottom {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-top: 1px;
+}
