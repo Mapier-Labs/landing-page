@@ -1,43 +1,24 @@
-interface SupabaseErrorLike {
+export interface SupabaseErrorLike {
   code?: string;
   message: string;
 }
 
-type UpdateResult = {
-  data: Array<{ id: string }> | null;
-  error: SupabaseErrorLike | null;
-};
-
 interface WaitlistClient {
-  from(table: "waitlist"): {
-    update(values: { name: string }): {
-      eq(
-        column: "phone",
-        value: string
-      ): {
-        select(columns?: string): PromiseLike<UpdateResult>;
-      };
-    };
-    insert(values: { phone: string; name: string }): PromiseLike<{
-      error: SupabaseErrorLike | null;
-    }>;
-  };
+  rpc(
+    fn: "save_waitlist_phone_name",
+    args: { p_phone: string; p_first_name: string; p_last_name: string | null }
+  ): PromiseLike<{ data: boolean | null; error: SupabaseErrorLike | null }>;
 }
 
-export type SaveWaitlistPhoneNameResult =
-  | { ok: true; matchedExisting: boolean }
-  | { ok: false; error: SupabaseErrorLike };
+export type SaveWaitlistPhoneNameResult = { ok: true } | { ok: false; error: SupabaseErrorLike };
 
-function composeFullName(first: string, last: string): string {
-  return last.length > 0 ? `${first} ${last}` : first;
-}
-
-async function updateNameByPhone(
-  client: WaitlistClient,
-  phone: string,
-  fullName: string
-): Promise<UpdateResult> {
-  return client.from("waitlist").update({ name: fullName }).eq("phone", phone).select("id");
+export function isWaitlistNameCaptureSchemaPendingError(error: SupabaseErrorLike): boolean {
+  return (
+    error.code === "42703" ||
+    error.code === "42883" ||
+    error.code === "23502" ||
+    error.code === "PGRST202"
+  );
 }
 
 export async function saveWaitlistPhoneName(
@@ -46,30 +27,11 @@ export async function saveWaitlistPhoneName(
   firstName: string,
   lastName: string
 ): Promise<SaveWaitlistPhoneNameResult> {
-  const fullName = composeFullName(firstName, lastName);
-
-  const updated = await updateNameByPhone(client, phone, fullName);
-  if (updated.error) {
-    return { ok: false, error: updated.error };
-  }
-  if (updated.data && updated.data.length > 0) {
-    return { ok: true, matchedExisting: true };
-  }
-
-  const inserted = await client.from("waitlist").insert({ phone, name: fullName });
-  if (!inserted.error) {
-    return { ok: true, matchedExisting: false };
-  }
-
-  if (inserted.error.code === "23505") {
-    const retried = await updateNameByPhone(client, phone, fullName);
-    if (retried.error) {
-      return { ok: false, error: retried.error };
-    }
-    if (retried.data && retried.data.length > 0) {
-      return { ok: true, matchedExisting: true };
-    }
-  }
-
-  return { ok: false, error: inserted.error };
+  const saved = await client.rpc("save_waitlist_phone_name", {
+    p_phone: phone,
+    p_first_name: firstName,
+    p_last_name: lastName.length > 0 ? lastName : null,
+  });
+  if (saved.error) return { ok: false, error: saved.error };
+  return { ok: true };
 }
