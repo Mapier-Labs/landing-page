@@ -12,6 +12,15 @@ interface WaitlistClient {
 
 export type SaveWaitlistPhoneNameResult = { ok: true } | { ok: false; error: SupabaseErrorLike };
 
+export function isWaitlistNameCaptureSchemaPendingError(error: SupabaseErrorLike): boolean {
+  return (
+    error.code === "42703" ||
+    error.code === "42883" ||
+    error.code === "23502" ||
+    error.code === "PGRST202"
+  );
+}
+
 export async function saveWaitlistPhoneName(
   client: WaitlistClient,
   phone: string,

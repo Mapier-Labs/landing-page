@@ -10,7 +10,10 @@
 //      back-fills the name onto the same row (upsert by phone).
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { saveWaitlistPhoneName } from "@/lib/waitlistNameCapture";
+import {
+  isWaitlistNameCaptureSchemaPendingError,
+  saveWaitlistPhoneName,
+} from "@/lib/waitlistNameCapture";
 
 function redactPhoneForLog(phone: string): string {
   const visibleSuffix = phone.slice(-4);
@@ -65,7 +68,7 @@ export async function POST(request: NextRequest) {
         if (!saved.ok) {
           // Schema not ready (phone/name column missing). Degrade gracefully
           // so the QR flow doesn't fail post-claim.
-          if (saved.error.code === "42703" || saved.error.code === "23502") {
+          if (isWaitlistNameCaptureSchemaPendingError(saved.error)) {
             console.warn("Waitlist schema not ready for name capture:", saved.error.message);
             return NextResponse.json(
               { success: true, message: "Skipped (schema pending)." },

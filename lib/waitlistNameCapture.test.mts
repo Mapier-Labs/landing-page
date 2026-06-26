@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { saveWaitlistPhoneName } from "./waitlistNameCapture.ts";
+import {
+  isWaitlistNameCaptureSchemaPendingError,
+  saveWaitlistPhoneName,
+} from "./waitlistNameCapture.ts";
 
 test("calls the backend-owned waitlist name RPC with full name fields", async () => {
   const calls: unknown[] = [];
@@ -55,4 +58,18 @@ test("returns RPC errors without throwing", async () => {
   const result = await saveWaitlistPhoneName(client, "+1555", "Bad", "");
 
   assert.deepEqual(result, { ok: false, error: { code: "23514", message: "invalid phone" } });
+});
+
+test("classifies waitlist name capture deployment-gap errors", () => {
+  for (const code of ["42703", "42883", "23502", "PGRST202"]) {
+    assert.equal(
+      isWaitlistNameCaptureSchemaPendingError({ code, message: "schema pending" }),
+      true
+    );
+  }
+
+  assert.equal(
+    isWaitlistNameCaptureSchemaPendingError({ code: "23514", message: "bad request" }),
+    false
+  );
 });
