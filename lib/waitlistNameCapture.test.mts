@@ -2,77 +2,57 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { saveWaitlistPhoneName } from "./waitlistNameCapture.ts";
 
-type SupabaseError = { code: string; message: string };
-type QueryResult<T> = Promise<{ data: T | null; error: SupabaseError | null }>;
-
-interface FakeClientOptions {
-  updateResults: Array<{ data: Array<{ id: string }> | null; error: SupabaseError | null }>;
-  insertError?: SupabaseError | null;
-}
-
-function makeFakeClient({ updateResults, insertError = null }: FakeClientOptions) {
-  const calls: Array<{ op: string; values?: unknown; column?: string; value?: string }> = [];
-
+test("calls the backend-owned waitlist name RPC with full name fields", async () => {
+  const calls: unknown[] = [];
   const client = {
-    from(table: string) {
-      assert.equal(table, "waitlist");
-      return {
-        update(values: unknown) {
-          calls.push({ op: "update", values });
-          return {
-            eq(column: string, value: string) {
-              calls.push({ op: "eq", column, value });
-              return {
-                select(): QueryResult<Array<{ id: string }>> {
-                  const result = updateResults.shift() ?? { data: [], error: null };
-                  return Promise.resolve(result);
-                },
-              };
-            },
-          };
-        },
-        insert(values: unknown) {
-          calls.push({ op: "insert", values });
-          return Promise.resolve({ data: null, error: insertError });
-        },
-      };
+    async rpc(name: string, args: unknown) {
+      calls.push({ name, args });
+      return { data: true, error: null };
     },
   };
 
-  return { client, calls };
-}
-
-test("updates the existing phone row with the submitted full name", async () => {
-  const { client, calls } = makeFakeClient({
-    updateResults: [{ data: [{ id: "row-1" }], error: null }],
-  });
-
   const result = await saveWaitlistPhoneName(client, "+15551234567", "Ada", "Lovelace");
 
-  assert.deepEqual(result, { ok: true, matchedExisting: true });
+  assert.deepEqual(result, { ok: true });
   assert.deepEqual(calls, [
-    { op: "update", values: { name: "Ada Lovelace" } },
-    { op: "eq", column: "phone", value: "+15551234567" },
+    {
+      name: "save_waitlist_phone_name",
+      args: {
+        p_phone: "+15551234567",
+        p_first_name: "Ada",
+        p_last_name: "Lovelace",
+      },
+    },
   ]);
 });
 
-test("retries the update when fallback insert hits a duplicate phone race", async () => {
-  const { client, calls } = makeFakeClient({
-    updateResults: [
-      { data: [], error: null },
-      { data: [{ id: "row-2" }], error: null },
-    ],
-    insertError: { code: "23505", message: "duplicate key value violates unique constraint" },
+test("passes null last name to the waitlist name RPC when omitted", async () => {
+  let rpcArgs: unknown;
+  const client = {
+    async rpc(_name: string, args: unknown) {
+      rpcArgs = args;
+      return { data: true, error: null };
+    },
+  };
+
+  const result = await saveWaitlistPhoneName(client, "+15557654321", "Grace", "");
+
+  assert.deepEqual(result, { ok: true });
+  assert.deepEqual(rpcArgs, {
+    p_phone: "+15557654321",
+    p_first_name: "Grace",
+    p_last_name: null,
   });
+});
 
-  const result = await saveWaitlistPhoneName(client, "+15557654321", "Grace", "Hopper");
+test("returns RPC errors without throwing", async () => {
+  const client = {
+    async rpc() {
+      return { data: null, error: { code: "23514", message: "invalid phone" } };
+    },
+  };
 
-  assert.deepEqual(result, { ok: true, matchedExisting: true });
-  assert.deepEqual(calls, [
-    { op: "update", values: { name: "Grace Hopper" } },
-    { op: "eq", column: "phone", value: "+15557654321" },
-    { op: "insert", values: { phone: "+15557654321", name: "Grace Hopper" } },
-    { op: "update", values: { name: "Grace Hopper" } },
-    { op: "eq", column: "phone", value: "+15557654321" },
-  ]);
+  const result = await saveWaitlistPhoneName(client, "+1555", "Bad", "");
+
+  assert.deepEqual(result, { ok: false, error: { code: "23514", message: "invalid phone" } });
 });

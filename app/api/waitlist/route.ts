@@ -9,7 +9,6 @@
 //   2. After the NameEntry screen — `{phone, first_name, last_name?}`,
 //      back-fills the name onto the same row (upsert by phone).
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { supabase } from "@/lib/supabase";
 import { saveWaitlistPhoneName } from "@/lib/waitlistNameCapture";
 
@@ -57,16 +56,11 @@ export async function POST(request: NextRequest) {
 
       // Phone + name → back-fill the name onto the existing phone row.
       //
-      // The table intentionally lets anon INSERT but not UPDATE/SELECT. Use a
-      // server-only service-role client for this back-fill so the API does not
-      // return a false success while RLS silently blocks the update.
+      // The table intentionally lets anon INSERT but not UPDATE/SELECT. Name
+      // back-fill goes through a narrow SECURITY DEFINER RPC owned by the
+      // backend DB migrations, avoiding a broad service-role key in Vercel.
       if (hasPhoneName) {
-        const saved = await saveWaitlistPhoneName(
-          getSupabaseAdmin(),
-          rawPhone,
-          rawFirstName,
-          rawLastName
-        );
+        const saved = await saveWaitlistPhoneName(supabase, rawPhone, rawFirstName, rawLastName);
 
         if (!saved.ok) {
           // Schema not ready (phone/name column missing). Degrade gracefully
@@ -84,7 +78,6 @@ export async function POST(request: NextRequest) {
 
         console.log("Waitlist name capture (phone):", {
           phone: redactPhoneForLog(rawPhone),
-          matchedExisting: saved.matchedExisting,
           timestamp: new Date().toISOString(),
         });
         return NextResponse.json({ success: true, message: "Name saved." }, { status: 200 });
